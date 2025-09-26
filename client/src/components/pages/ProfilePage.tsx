@@ -23,8 +23,9 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
   useEffect(() => {
     console.log('🔍 ProfilePage useEffect triggered with user:', user);
+    
     if (user) {
-      console.log('👤 User context available:', { fid: user.fid, displayName: user.displayName });
+      console.log('👤 MiniKit user context available:', { fid: user.fid, displayName: user.displayName });
       // Set user data in the store
       setUserData(user.fid, user.displayName || `Player ${user.fid}`, user.pfpUrl || '');
       // Load player statistics
@@ -40,9 +41,26 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       // Load detailed game history
       loadGameHistory(user.fid);
     } else {
-      console.log('❌ No user context available in ProfilePage');
+      console.log('❌ No MiniKit user context available, checking for fallback...');
+      
+      // Fallback: try to get user data from persisted store or JWT token
+      const persistedFid = farcasterFid;
+      console.log('🔄 Checking persisted FID from store:', persistedFid);
+      
+      if (persistedFid) {
+        console.log('✅ Using persisted FID for data loading:', persistedFid);
+        // Load data with persisted FID
+        loadPlayerStats(persistedFid);
+        checkDailyLogin();
+        loadSocialData(persistedFid);
+        loadGameHistory(persistedFid);
+      } else {
+        console.log('🔑 No persisted FID, attempting to authenticate...');
+        // Try to authenticate and get user data
+        tryAuthenticateUser();
+      }
     }
-  }, [user, loadPlayerStats, setUserData, checkDailyLogin]);
+  }, [user, loadPlayerStats, setUserData, checkDailyLogin, farcasterFid]);
 
   // Listen for game completion events to refresh profile data
   useEffect(() => {
