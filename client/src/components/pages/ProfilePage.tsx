@@ -22,10 +22,13 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   const [loadingHistory, setLoadingHistory] = useState(false);
 
   useEffect(() => {
+    console.log('🔍 ProfilePage useEffect triggered with user:', user);
     if (user) {
+      console.log('👤 User context available:', { fid: user.fid, displayName: user.displayName });
       // Set user data in the store
       setUserData(user.fid, user.displayName || `Player ${user.fid}`, user.pfpUrl || '');
       // Load player statistics
+      console.log('📊 About to call loadPlayerStats with FID:', user.fid);
       loadPlayerStats(user.fid);
       
       // Check daily login
@@ -36,6 +39,8 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       
       // Load detailed game history
       loadGameHistory(user.fid);
+    } else {
+      console.log('❌ No user context available in ProfilePage');
     }
   }, [user, loadPlayerStats, setUserData, checkDailyLogin]);
 

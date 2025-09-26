@@ -97,37 +97,52 @@ export const usePlayerStats = create<PlayerStatsState>()(
       },
       
       loadPlayerStats: async (farcasterFid: number) => {
+        console.log('📊 Loading player stats for FID:', farcasterFid);
         set({ isLoading: true });
         try {
+          console.log('🌐 Fetching player stats from API...');
           const response = await fetch(`/api/player-stats/${farcasterFid}`);
+          console.log('📡 API Response status:', response.status);
+          
           if (response.ok) {
             const data = await response.json();
+            console.log('✅ Player stats API data received:', data);
+            
+            const newStats = {
+              totalScore: data.totalScore || 0,
+              highScore: data.highScore || 0,
+              enemiesDestroyed: data.enemiesDestroyed || 0,
+              gamesPlayed: data.gamesPlayed || 0,
+              timePlayedMinutes: data.timePlayedMinutes || 0,
+              streakDays: data.streakDays || 1,
+              maxStreak: data.maxStreak || 1,
+              dailyLogins: data.dailyLogins || 1,
+              socialShares: data.socialShares || 0,
+              friendsInvited: data.friendsInvited || 0,
+            };
+            
+            console.log('📈 Setting new stats in store:', newStats);
+            
             set({
-              stats: {
-                totalScore: data.totalScore || 0,
-                highScore: data.highScore || 0,
-                enemiesDestroyed: data.enemiesDestroyed || 0,
-                gamesPlayed: data.gamesPlayed || 0,
-                timePlayedMinutes: data.timePlayedMinutes || 0,
-                streakDays: data.streakDays || 1,
-                maxStreak: data.maxStreak || 1,
-                dailyLogins: data.dailyLogins || 1,
-                socialShares: data.socialShares || 0,
-                friendsInvited: data.friendsInvited || 0,
-              },
+              stats: newStats,
               farcasterFid,
               lastLoginDate: data.lastLoginAt ? new Date(data.lastLoginAt).toISOString().split('T')[0] : null,
               currentStreak: data.streakDays || 1,
               lastSynced: new Date(),
             });
+            
+            console.log('✅ Player stats store updated successfully');
+          } else {
+            console.error('❌ API request failed:', response.status, await response.text());
           }
           
           // Load purchase history
           await get().loadPurchaseHistory(farcasterFid);
         } catch (error) {
-          console.error('Failed to load player stats:', error);
+          console.error('❌ Failed to load player stats:', error);
         } finally {
           set({ isLoading: false });
+          console.log('🏁 Player stats loading completed');
         }
       },
       
