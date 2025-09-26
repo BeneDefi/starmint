@@ -1,0 +1,18 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjMyOTM3MCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDgxZUNlQjgzMDVlOTExODc4NjFBOTAyNzQ1OWRFM0M3RDY1MUJkNWYifQ",
+    "payload": "eyJkb21haW4iOiJzcGFjZS1zaG9vdGVyLTEtMS5vbnJlbmRlci5jb20ifQ",
+    "signature": "MHgwNTU1MDA2YWYwZGNkMmI0ZTQwNzFlNzA3NjYyMDI3MTBhM2FiNmUwOWRhMjVhMmQxMzIyNTRkMDg3OWViNWJhNzc0ZGNhZjk2MzJmZjBhMWIzMGQ3MzJmY2Y5N2QzYTlhMjQwMDlhY2ViMzM3NmJjZWIxZTlkOWYwNzg2Mjc3ZjFj"
+  },
+  "frame": {
+    "version": "1",
+    "name": "Space Shooter Game",
+    "iconUrl": "https://i.imgur.com/GsMcnUq.jpeg",
+    "homeUrl": "https://space-shooter-1-1.onrender.com/",
+    "imageUrl": "https://i.imgur.com/GsMcnUq.jpeg",
+    "buttonTitle": "Play Game",
+    "splashImageUrl": "https://i.imgur.com/GsMcnUq.jpeg",
+    "splashBackgroundColor": "#800080",
+    "webhookUrl": "https://space-shooter-1-1.onrender.com/webhook"
+  }
+}
