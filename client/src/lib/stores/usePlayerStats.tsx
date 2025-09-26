@@ -30,6 +30,7 @@ interface PlayerStatsState {
   addPurchase: (purchase: PurchaseRecord) => void;
   syncWithDatabase: () => Promise<void>;
   loadPlayerStats: (farcasterFid: number) => Promise<void>;
+  loadPurchaseHistory: (farcasterFid: number) => Promise<void>;
   resetStats: () => void;
 }
 

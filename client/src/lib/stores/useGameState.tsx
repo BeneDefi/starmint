@@ -192,6 +192,17 @@ export const useGameState = create<GameState>((set, get) => ({
         }
         
         console.log('📊 Local player stats updated successfully');
+        
+        // Dispatch event to notify profile page to refresh data
+        window.dispatchEvent(new CustomEvent('gameCompleted', { 
+          detail: { 
+            score: state.score, 
+            level: finalSessionData.maxLevel,
+            enemiesKilled: finalSessionData.enemiesKilled,
+            gameTime 
+          } 
+        }));
+        
       } else {
         const errorText = await response.text();
         console.error('❌ Failed to save game session:', response.status, errorText);

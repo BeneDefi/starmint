@@ -39,6 +39,27 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
     }
   }, [user, loadPlayerStats, setUserData, checkDailyLogin]);
 
+  // Listen for game completion events to refresh profile data
+  useEffect(() => {
+    const handleGameCompleted = (event: CustomEvent) => {
+      console.log('🎮 Game completed event received:', event.detail);
+      if (user) {
+        // Refresh player stats and game history after game completion
+        setTimeout(() => {
+          loadPlayerStats(user.fid);
+          loadGameHistory(user.fid);
+          console.log('📊 Profile data refreshed after game completion');
+        }, 1000); // Small delay to ensure server-side processing is complete
+      }
+    };
+
+    window.addEventListener('gameCompleted', handleGameCompleted as EventListener);
+    
+    return () => {
+      window.removeEventListener('gameCompleted', handleGameCompleted as EventListener);
+    };
+  }, [user, loadPlayerStats]);
+
   const loadSocialData = async (fid: number) => {
     try {
       const leaderboard = SocialLeaderboard.getInstance();
