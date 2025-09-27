@@ -114,10 +114,20 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
           console.log("🔗 Getting context information...");
           const contextData = await sdk.context;
           console.log("📊 Context data received:", contextData);
+          console.log("🔍 Deep context analysis:", {
+            hasContext: !!contextData,
+            hasUser: !!contextData?.user,
+            userFid: contextData?.user?.fid,
+            userPfp: contextData?.user?.pfpUrl,
+            userDisplay: contextData?.user?.displayName,
+            userUsername: contextData?.user?.username,
+            contextType: typeof contextData,
+            contextKeys: contextData ? Object.keys(contextData) : 'no context'
+          });
           setContext(contextData);
 
           // Check if user is already signed in
-          if (contextData?.user) {
+          if (contextData?.user && contextData.user.fid) {
             console.log("👤 User found in context:", {
               fid: contextData.user.fid,
               username: contextData.user.username, 
@@ -133,6 +143,18 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
             };
             
             console.log("🖼️ Profile picture URL:", userData.pfpUrl);
+            
+            // Validate and potentially fix profile picture URL
+            if (userData.pfpUrl) {
+              console.log("✅ Valid profile picture URL found, testing load...");
+              const img = new Image();
+              img.onload = () => console.log("✅ Profile picture loads successfully");
+              img.onerror = () => console.log("❌ Profile picture failed to load:", userData.pfpUrl);
+              img.src = userData.pfpUrl;
+            } else {
+              console.log("⚠️ No profile picture URL in Farcaster context");
+            }
+            
             setUser(userData);
             setIsConnected(true);
             
@@ -150,7 +172,7 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
               const { usePlayerStats } = await import('../stores/usePlayerStats');
               const playerStatsState = usePlayerStats.getState();
               console.log('📊 Populating playerStats store with Farcaster user data...');
-              playerStatsState.setUserData(userData.fid, userData.displayName, userData.pfpUrl);
+              playerStatsState.setUserData(userData.fid, userData.displayName || userData.username, userData.pfpUrl || '');
               playerStatsState.loadPlayerStats(userData.fid);
               console.log('✅ PlayerStats store populated for game persistence');
             } else {
@@ -185,7 +207,7 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
               const { usePlayerStats } = await import('../stores/usePlayerStats');
               const playerStatsState = usePlayerStats.getState();
               console.log('📊 Populating playerStats store with test user data...');
-              playerStatsState.setUserData(testUser.fid, testUser.displayName, testUser.pfpUrl);
+              playerStatsState.setUserData(testUser.fid, testUser.displayName || testUser.username, testUser.pfpUrl || '');
               playerStatsState.loadPlayerStats(testUser.fid);
               console.log('✅ PlayerStats store populated for game persistence');
             } else {
@@ -221,7 +243,7 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
             const { usePlayerStats } = await import('../stores/usePlayerStats');
             const playerStatsState = usePlayerStats.getState();
             console.log('📊 Populating playerStats store with fallback user data...');
-            playerStatsState.setUserData(fallbackTestUser.fid, fallbackTestUser.displayName, fallbackTestUser.pfpUrl);
+            playerStatsState.setUserData(fallbackTestUser.fid, fallbackTestUser.displayName || fallbackTestUser.username, fallbackTestUser.pfpUrl || '');
             playerStatsState.loadPlayerStats(fallbackTestUser.fid);
             console.log('✅ PlayerStats store populated for game persistence');
           } else {
