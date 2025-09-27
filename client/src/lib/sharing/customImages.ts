@@ -70,7 +70,7 @@ export class CustomShareGenerator {
 
   generateAchievementShareText(achievement: string, reward: string): string {
     return `🏆 Achievement Unlocked: "${achievement}"!\\n\\n` +
-           `💰 Earned: ${reward} GALAXIGA tokens\\n\\n` +
+           `💰 Earned: ${reward} STARMINT tokens\\n\\n` +
            `🎮 Join me in Galaxiga Classic Space Shooter and unlock your own rewards!`;
   }
 

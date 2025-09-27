@@ -145,6 +145,14 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
             const authToken = await authenticateUserWithServer(userData);
             if (authToken) {
               console.log("✅ MiniKit initialization: Server authentication completed successfully");
+              
+              // Immediately populate playerStats store to ensure game saves work
+              const { usePlayerStats } = await import('../stores/usePlayerStats');
+              const playerStatsState = usePlayerStats.getState();
+              console.log('📊 Populating playerStats store with Farcaster user data...');
+              playerStatsState.setUserData(userData.fid, userData.displayName, userData.pfpUrl);
+              playerStatsState.loadPlayerStats(userData.fid);
+              console.log('✅ PlayerStats store populated for game persistence');
             } else {
               console.error("❌ MiniKit initialization: Server authentication failed");
             }
@@ -172,6 +180,14 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
             const authToken = await authenticateUserWithServer(testUser);
             if (authToken) {
               console.log("✅ Test user authentication completed successfully");
+              
+              // Immediately populate playerStats store to ensure game saves work
+              const { usePlayerStats } = await import('../stores/usePlayerStats');
+              const playerStatsState = usePlayerStats.getState();
+              console.log('📊 Populating playerStats store with test user data...');
+              playerStatsState.setUserData(testUser.fid, testUser.displayName, testUser.pfpUrl);
+              playerStatsState.loadPlayerStats(testUser.fid);
+              console.log('✅ PlayerStats store populated for game persistence');
             } else {
               console.error("❌ Test user authentication failed");
             }
@@ -200,6 +216,14 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
           const authToken = await authenticateUserWithServer(fallbackTestUser);
           if (authToken) {
             console.log("✅ Fallback user authentication completed successfully");
+            
+            // Immediately populate playerStats store to ensure game saves work
+            const { usePlayerStats } = await import('../stores/usePlayerStats');
+            const playerStatsState = usePlayerStats.getState();
+            console.log('📊 Populating playerStats store with fallback user data...');
+            playerStatsState.setUserData(fallbackTestUser.fid, fallbackTestUser.displayName, fallbackTestUser.pfpUrl);
+            playerStatsState.loadPlayerStats(fallbackTestUser.fid);
+            console.log('✅ PlayerStats store populated for game persistence');
           } else {
             console.error("❌ Fallback user authentication failed");
           }

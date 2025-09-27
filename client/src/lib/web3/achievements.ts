@@ -162,7 +162,7 @@ export interface Achievement {
           <div class="achievement-text">
             <h3>Achievement Unlocked!</h3>
             <p>${achievement.name}</p>
-            <span>+${achievement.reward} GALAXIGA</span>
+            <span>+${achievement.reward} STARMINT</span>
           </div>
         </div>
       `;

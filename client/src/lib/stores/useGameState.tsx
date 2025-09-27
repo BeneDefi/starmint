@@ -93,10 +93,21 @@ export const useGameState = create<GameState>((set, get) => ({
       
       // Try to get Farcaster user from the playerStats store first
       const playerStatsState = usePlayerStats.getState();
-      const farcasterFid = playerStatsState.farcasterFid;
-      const displayName = playerStatsState.displayName || 'Player';
+      let farcasterFid = playerStatsState.farcasterFid;
+      let displayName = playerStatsState.displayName || 'Player';
       
-      console.log('👤 Using Farcaster data from store:', { farcasterFid, displayName });
+      // Fallback to global context if store doesn't have user data
+      if (!farcasterFid) {
+        console.log('🔄 No FID in store, checking global MiniKit context...');
+        const globalContext = (window as any).__miniKitContext__;
+        if (globalContext?.user) {
+          farcasterFid = globalContext.user.fid;
+          displayName = globalContext.user.displayName || 'Player';
+          console.log('✅ Using FID from global context:', { farcasterFid, displayName });
+        }
+      }
+      
+      console.log('👤 Using Farcaster data for game save:', { farcasterFid, displayName });
       
       if (farcasterFid) {
         console.log('🔐 Authenticating Farcaster user for game save...');

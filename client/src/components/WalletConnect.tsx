@@ -163,10 +163,10 @@ export default function WalletConnect({ onClose }: WalletConnectProps) {
             <div className="mt-6 p-4 bg-gradient-to-r from-cyan-900/30 to-purple-900/30 border border-cyan-500/30 rounded-lg">
               <div className="flex items-center space-x-2 mb-2">
                 <Coins className="w-5 h-5 text-cyan-400" />
-                <span className="text-white font-medium">GALAXIGA Tokens</span>
+                <span className="text-white font-medium">STARMINT Tokens</span>
               </div>
               <div className="text-sm text-gray-300">
-                Earn GALAXIGA tokens by playing, achieving high scores, and sharing with friends. 
+                Earn STARMINT tokens by playing, achieving high scores, and sharing with friends. 
                 Use them to unlock special rewards and NFTs!
               </div>
             </div>

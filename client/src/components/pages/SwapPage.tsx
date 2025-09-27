@@ -76,7 +76,7 @@ export default function SwapPage({ onBack }: SwapPageProps) {
               </div>
               <div className="flex items-center space-x-2 sm:space-x-3">
                 <div className="w-6 h-6 sm:w-8 sm:h-8 bg-cyan-400 rounded-full shrink-0" />
-                <span className="text-sm sm:text-base md:text-lg font-bold text-white truncate">GALAXIGA</span>
+                <span className="text-sm sm:text-base md:text-lg font-bold text-white truncate">STARMINT</span>
                 <input
                   type="number"
                   placeholder="0.00"
@@ -119,7 +119,7 @@ export default function SwapPage({ onBack }: SwapPageProps) {
             <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-slate-700/30 rounded-lg">
               <div className="flex items-center justify-between text-xs sm:text-sm">
                 <span className="text-gray-400">Exchange Rate</span>
-                <span className="text-white">1 GALAXIGA = 2.50 GETH</span>
+                <span className="text-white">1 STARMINT = 2.50 GETH</span>
               </div>
             </div>
 
@@ -144,7 +144,7 @@ export default function SwapPage({ onBack }: SwapPageProps) {
                 >
                   <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
                     <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full shrink-0 ${
-                      currency.symbol === 'GALAXIGA' ? 'bg-cyan-400' :
+                      currency.symbol === 'STARMINT' ? 'bg-cyan-400' :
                       currency.symbol === 'GETH' ? 'bg-green-400' :
                       currency.symbol === 'SCOIN' ? 'bg-yellow-400' : 'bg-purple-400'
                     }`} />

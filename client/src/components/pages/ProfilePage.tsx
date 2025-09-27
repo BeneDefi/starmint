@@ -24,24 +24,36 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   useEffect(() => {
     console.log('🔍 ProfilePage useEffect triggered with user:', user);
     
-    if (user) {
-      console.log('👤 MiniKit user context available:', { fid: user.fid, displayName: user.displayName });
+    let activeUser = user;
+    
+    // If no user from MiniKit hook, check global context
+    if (!activeUser) {
+      console.log('❌ No MiniKit user context from hook, checking global context...');
+      const globalContext = (window as any).__miniKitContext__;
+      if (globalContext?.user) {
+        console.log('✅ Found user in global MiniKit context:', globalContext.user);
+        activeUser = globalContext.user;
+      }
+    }
+    
+    if (activeUser) {
+      console.log('👤 Using user context:', { fid: activeUser.fid, displayName: activeUser.displayName });
       // Set user data in the store
-      setUserData(user.fid, user.displayName || `Player ${user.fid}`, user.pfpUrl || '');
+      setUserData(activeUser.fid, activeUser.displayName || `Player ${activeUser.fid}`, activeUser.pfpUrl || '');
       // Load player statistics
-      console.log('📊 About to call loadPlayerStats with FID:', user.fid);
-      loadPlayerStats(user.fid);
+      console.log('📊 About to call loadPlayerStats with FID:', activeUser.fid);
+      loadPlayerStats(activeUser.fid);
       
       // Check daily login
       checkDailyLogin();
       
       // Load social data
-      loadSocialData(user.fid);
+      loadSocialData(activeUser.fid);
       
       // Load detailed game history
-      loadGameHistory(user.fid);
+      loadGameHistory(activeUser.fid);
     } else {
-      console.log('❌ No MiniKit user context available, checking for fallback...');
+      console.log('❌ No user context available anywhere, checking for persisted data...');
       
       // Fallback: try to get user data from persisted store or JWT token
       const persistedFid = farcasterFid;
@@ -65,13 +77,34 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   useEffect(() => {
     const handleGameCompleted = (event: CustomEvent) => {
       console.log('🎮 Game completed event received:', event.detail);
-      if (user) {
+      
+      // Use same fallback mechanism as initial load
+      let refreshUser = user;
+      if (!refreshUser) {
+        const globalContext = (window as any).__miniKitContext__;
+        if (globalContext?.user) {
+          console.log('🔄 Using global context for game completion refresh:', globalContext.user);
+          refreshUser = globalContext.user;
+        }
+      }
+      
+      if (refreshUser) {
         // Refresh player stats and game history after game completion
         setTimeout(() => {
-          loadPlayerStats(user.fid);
-          loadGameHistory(user.fid);
+          loadPlayerStats(refreshUser.fid);
+          loadGameHistory(refreshUser.fid);
           console.log('📊 Profile data refreshed after game completion');
         }, 1000); // Small delay to ensure server-side processing is complete
+      } else if (farcasterFid) {
+        // Fallback to stored FID
+        console.log('🔄 Using stored FID for game completion refresh:', farcasterFid);
+        setTimeout(() => {
+          loadPlayerStats(farcasterFid);
+          loadGameHistory(farcasterFid);
+          console.log('📊 Profile data refreshed using stored FID');
+        }, 1000);
+      } else {
+        console.log('⚠️ No user context available for game completion refresh');
       }
     };
 
@@ -80,7 +113,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
     return () => {
       window.removeEventListener('gameCompleted', handleGameCompleted as EventListener);
     };
-  }, [user, loadPlayerStats]);
+  }, [user, loadPlayerStats, farcasterFid]);
 
   const loadSocialData = async (fid: number) => {
     try {

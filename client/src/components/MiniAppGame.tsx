@@ -202,7 +202,7 @@ export default function MiniAppGame() {
             <p className="text-gray-300 mb-4">{newAchievement.description}</p>
             <div className="flex items-center justify-center space-x-2 mb-4">
               <Gift className="w-5 h-5 text-cyan-400" />
-              <span className="text-cyan-400 font-bold">+{newAchievement.reward?.tokenReward || 0} GALAXIGA</span>
+              <span className="text-cyan-400 font-bold">+{newAchievement.reward?.tokenReward || 0} STARMINT</span>
             </div>
             <div className="flex space-x-3">
               <button
@@ -281,7 +281,7 @@ export default function MiniAppGame() {
             </div>
             <div>
               <div className="text-cyan-400 text-lg font-bold">{achievements.current.getTotalRewards()}</div>
-              <div className="text-gray-300 text-xs">GALAXIGA</div>
+              <div className="text-gray-300 text-xs">STARMINT</div>
             </div>
           </div>
         </div>

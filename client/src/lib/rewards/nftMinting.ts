@@ -216,8 +216,8 @@ export class NFTMintingSystem {
         return { success: false, error: 'Wallet not connected' };
       }
 
-      // Simulate GALAXIGA token minting
-      console.log(`Minting ${amount} GALAXIGA tokens to ${account}`);
+      // Simulate STARMINT token minting
+      console.log(`Minting ${amount} STARMINT tokens to ${account}`);
       
       // In real implementation, would call token contract mint function
       return { 
