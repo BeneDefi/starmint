@@ -179,17 +179,22 @@ export interface LeaderboardEntry {
   
     connect(): void {
       try {
-        this.ws = new WebSocket(`wss://${window.location.host}/ws/leaderboard`);
+        // TODO: WebSocket server not configured - disable real-time updates for now
+        console.log('🔄 Real-time leaderboard disabled (WebSocket server not configured)');
+        return;
         
-        this.ws.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-          this.callbacks.forEach(callback => callback(data));
-        };
-  
-        this.ws.onclose = () => {
-          // Reconnect after 5 seconds
-          setTimeout(() => this.connect(), 5000);
-        };
+        // Temporarily disabled until WebSocket server is set up
+        // this.ws = new WebSocket(`wss://${window.location.host}/ws/leaderboard`);
+        // 
+        // this.ws.onmessage = (event) => {
+        //   const data = JSON.parse(event.data);
+        //   this.callbacks.forEach(callback => callback(data));
+        // };
+        // 
+        // this.ws.onclose = () => {
+        //   // Reconnect after 5 seconds
+        //   setTimeout(() => this.connect(), 5000);
+        // };
       } catch (error) {
         console.error('Failed to connect to realtime leaderboard:', error);
       }

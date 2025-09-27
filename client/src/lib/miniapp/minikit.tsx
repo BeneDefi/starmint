@@ -162,6 +162,17 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
             (window as any).__miniKitContext__ = { user: userData, context: contextData };
             console.log("🌐 Global MiniKit context set on window:", (window as any).__miniKitContext__);
             
+            // Immediately populate playerStats store to ensure profile page has data
+            try {
+              const { usePlayerStats } = await import('../stores/usePlayerStats');
+              const playerStatsState = usePlayerStats.getState();
+              console.log('🔄 Setting user data in playerStats store for immediate access...');
+              playerStatsState.setUserData(userData.fid, userData.displayName || userData.username, userData.pfpUrl || '');
+              console.log('✅ User data set in store, profile page should now work');
+            } catch (error) {
+              console.error('❌ Failed to set user data in store:', error);
+            }
+            
             // Authenticate with server immediately
             console.log("🔄 Starting server authentication for Farcaster user...");
             const authToken = await authenticateUserWithServer(userData);
@@ -196,6 +207,21 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
             // Update global context for game authentication
             (window as any).__miniKitContext__ = { user: testUser, context: null };
             console.log("🌐 Global MiniKit context set for test user:", (window as any).__miniKitContext__);
+            
+            // Immediately populate playerStats store to ensure profile page has data
+            try {
+              const { usePlayerStats } = await import('../stores/usePlayerStats');
+              const playerStatsState = usePlayerStats.getState();
+              console.log('🔄 Setting test user data in playerStats store for immediate access...');
+              playerStatsState.setUserData(testUser.fid, testUser.displayName || testUser.username, testUser.pfpUrl || '');
+              
+              // Also trigger loading of player stats immediately
+              console.log('🔄 Loading player stats for test user...');
+              await playerStatsState.loadPlayerStats(testUser.fid);
+              console.log('✅ Test user data and stats loaded in store, profile page should now work');
+            } catch (error) {
+              console.error('❌ Failed to set test user data in store:', error);
+            }
             
             // Authenticate test user with server immediately
             console.log("🔄 Starting server authentication for test user...");
@@ -232,6 +258,17 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
           // Update global context for game authentication
           (window as any).__miniKitContext__ = { user: fallbackTestUser, context: null };
           console.log("🌐 Global MiniKit context set for fallback user:", (window as any).__miniKitContext__);
+          
+          // Immediately populate playerStats store to ensure profile page has data
+          try {
+            const { usePlayerStats } = await import('../stores/usePlayerStats');
+            const playerStatsState = usePlayerStats.getState();
+            console.log('🔄 Setting fallback user data in playerStats store for immediate access...');
+            playerStatsState.setUserData(fallbackTestUser.fid, fallbackTestUser.displayName || fallbackTestUser.username, fallbackTestUser.pfpUrl || '');
+            console.log('✅ Fallback user data set in store, profile page should now work');
+          } catch (error) {
+            console.error('❌ Failed to set fallback user data in store:', error);
+          }
           
           // Authenticate fallback test user with server immediately
           console.log("🔄 Starting server authentication for fallback user...");
