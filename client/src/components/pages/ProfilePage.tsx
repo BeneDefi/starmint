@@ -13,7 +13,7 @@ interface ProfilePageProps {
 
 export default function ProfilePage({ onBack }: ProfilePageProps) {
   const { user } = useMiniKit();
-  const { stats, isLoading, loadPlayerStats, setUserData, checkDailyLogin, purchaseHistory, currentStreak, lastLoginDate } = usePlayerStats();
+  const { stats, isLoading, loadPlayerStats, setUserData, checkDailyLogin, purchaseHistory, currentStreak, lastLoginDate, farcasterFid } = usePlayerStats();
   const [playerRank, setPlayerRank] = useState<number | null>(null);
   const [friendsRanking, setFriendsRanking] = useState<any[]>([]);
   const [totalRewards, setTotalRewards] = useState(0);
@@ -55,9 +55,8 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         loadSocialData(persistedFid);
         loadGameHistory(persistedFid);
       } else {
-        console.log('🔑 No persisted FID, attempting to authenticate...');
-        // Try to authenticate and get user data
-        tryAuthenticateUser();
+        console.log('🔑 No persisted FID available, using fallback data...');
+        // No user data available, component will show default state
       }
     }
   }, [user, loadPlayerStats, setUserData, checkDailyLogin, farcasterFid]);
