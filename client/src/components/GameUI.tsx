@@ -37,7 +37,7 @@ export default function GameUI({ onStart, onBackToMenu }: GameUIProps) {
       <div className="absolute inset-0 flex items-center justify-center z-10">
         <Card className="w-full max-w-xs sm:max-w-sm mx-3 sm:mx-4 bg-black/80 border-purple-500">
           <CardContent className="p-4 sm:p-6 text-center">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Galaxiga</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Starmint</h1>
             <p className="text-purple-300 mb-4 sm:mb-6 text-sm sm:text-base">Classic Space Shooter</p>
             
             <div className="space-y-3 sm:space-y-4">

@@ -13,10 +13,10 @@ export default function MiniAppHeader({ title, description, imageUrl }: MiniAppH
       version: "next",
       imageUrl: imageUrl,
       button: {
-        title: "🚀 Play Galaxiga",
+        title: "🚀 Play Starmint",
         action: {
           type: "launch_miniapp",
-          name: "Galaxiga Classic Space Shooter",
+          name: "Starmint Classic Space Shooter",
           url: window.location.origin,
           splashImageUrl: window.location.origin + "/spaceship.png",
           splashBackgroundColor: "#0f172a"

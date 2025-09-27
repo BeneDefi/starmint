@@ -7,7 +7,7 @@ interface SwapPageProps {
 }
 
 const currencies = [
-  { symbol: "GALAXIGA", name: "Galaxiga Token", balance: 0, price: 1.00, change: 0 },
+  { symbol: "STARMINT", name: "Starmint Token", balance: 0, price: 1.00, change: 0 },
   { symbol: "GETH", name: "Game Ethereum", balance: 0, price: 2.50, change: 5.2 },
   { symbol: "SCOIN", name: "Space Coin", balance: 0, price: 0.75, change: -2.1 },
   { symbol: "NEON", name: "Neon Credits", balance: 0, price: 1.25, change: 8.7 },

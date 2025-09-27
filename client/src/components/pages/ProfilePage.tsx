@@ -176,7 +176,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   
   const overallAccuracy = calculateOverallAccuracy();
 
-  // Calculate total GALAXIGA rewards
+  // Calculate total STARMINT rewards
   useEffect(() => {
     const unlockedAchievements = ACHIEVEMENTS.filter(achievement => achievement.condition(stats));
     const totalTokens = unlockedAchievements.reduce((sum, achievement) => sum + achievement.reward, 0);
@@ -346,12 +346,12 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               </div>
             </div>
             
-            {/* GALAXIGA Token Balance */}
+            {/* STARMINT Token Balance */}
             <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg p-3 sm:p-4 border border-cyan-500/30">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center space-x-2 min-w-0">
                   <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 shrink-0" />
-                  <span className="text-sm sm:text-base text-white font-medium truncate">GALAXIGA Tokens</span>
+                  <span className="text-sm sm:text-base text-white font-medium truncate">STARMINT Tokens</span>
                 </div>
                 <div className="text-xl sm:text-2xl font-bold text-yellow-400">{totalRewards.toLocaleString()}</div>
               </div>
@@ -501,7 +501,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                           <div className="flex items-center space-x-1 sm:space-x-2 mt-1 sm:mt-2">
                             <Trophy className="w-3 h-3 text-yellow-400" />
                             <span className={`text-xs font-medium ${achievement.unlocked ? 'text-yellow-400' : 'text-gray-500'}`}>
-                              {achievement.reward} GALAXIGA
+                              {achievement.reward} STARMINT
                             </span>
                           </div>
                         </div>

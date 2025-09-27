@@ -1,4 +1,4 @@
-// Achievement system for Galaxiga Mini App
+// Achievement system for Starmint Mini App
 
 export interface Achievement {
     id: string;
@@ -6,7 +6,7 @@ export interface Achievement {
     description: string;
     icon: string;
     condition: (stats: GameStats) => boolean;
-    reward: number; // GALAXIGA tokens
+    reward: number; // STARMINT tokens
     nftMetadata?: {
       name: string;
       description: string;
@@ -36,8 +36,8 @@ export interface Achievement {
       condition: (stats) => stats.enemiesDestroyed >= 1,
       reward: 10,
       nftMetadata: {
-        name: 'Galaxiga First Blood',
-        description: 'Commemorating your first enemy destroyed in Galaxiga',
+        name: 'Starmint First Blood',
+        description: 'Commemorating your first enemy destroyed in Starmint',
         image: '/achievements/first-blood.png'
       }
     },
@@ -49,7 +49,7 @@ export interface Achievement {
       condition: (stats) => stats.enemiesDestroyed >= 100,
       reward: 100,
       nftMetadata: {
-        name: 'Galaxiga Centurion',
+        name: 'Starmint Centurion',
         description: 'Elite warrior who has destroyed 100 enemies',
         image: '/achievements/centurion.png'
       }
@@ -86,7 +86,7 @@ export interface Achievement {
       condition: (stats) => stats.streakDays >= 7,
       reward: 200,
       nftMetadata: {
-        name: 'Galaxiga Dedication Badge',
+        name: 'Starmint Dedication Badge',
         description: 'Awarded for playing 7 consecutive days',
         image: '/achievements/dedicated.png'
       }
@@ -107,7 +107,7 @@ export interface Achievement {
       condition: (stats) => stats.dailyLogins >= 30,
       reward: 300,
       nftMetadata: {
-        name: 'Galaxiga Login Warrior',
+        name: 'Starmint Login Warrior',
         description: 'Committed player with 30 total login days',
         image: '/achievements/login-warrior.png'
       }
@@ -120,7 +120,7 @@ export interface Achievement {
       condition: (stats) => stats.maxStreak >= 30,
       reward: 500,
       nftMetadata: {
-        name: 'Galaxiga Streak Master',
+        name: 'Starmint Streak Master',
         description: 'Elite dedication with 30 consecutive days',
         image: '/achievements/streak-master.png'
       }

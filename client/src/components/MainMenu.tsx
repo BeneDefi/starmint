@@ -108,7 +108,7 @@ export default function MainMenu({ onStartGame }: MainMenuProps) {
           </motion.div>
         </motion.div>
 
-        {/* Galaxiga Balance Section */}
+        {/* Starmint Balance Section */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -124,7 +124,7 @@ export default function MainMenu({ onStartGame }: MainMenuProps) {
                 <Rocket weight="duotone" className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 text-xl sm:text-2xl font-bold tracking-wide">GALAXIGA</h1>
+                <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 text-xl sm:text-2xl font-bold tracking-wide">STARMINT</h1>
                 <p className="text-gray-400 text-xs sm:text-sm">Classic Space Shooter</p>
               </div>
             </div>
@@ -168,7 +168,7 @@ export default function MainMenu({ onStartGame }: MainMenuProps) {
               backgroundPosition: 'center'
             }}
             role="button"
-            aria-label="Start playing Galaxiga Classic Space Shooter"
+            aria-label="Start playing Starmint Classic Space Shooter"
             tabIndex={0}
           >
             {/* Glassmorphism overlay */}
@@ -321,7 +321,7 @@ export default function MainMenu({ onStartGame }: MainMenuProps) {
               backgroundPosition: 'center'
             }}
             role="button"
-            aria-label="Access GalaxigaSwap to trade game currencies"
+            aria-label="Access StarmintSwap to trade game currencies"
             tabIndex={0}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-black/20" />
@@ -334,7 +334,7 @@ export default function MainMenu({ onStartGame }: MainMenuProps) {
                   <ArrowsClockwise weight="duotone" className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400 group-hover:text-white group-hover:animate-spin transition-all duration-300" />
                 </div>
                 <div className="text-left">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 font-bold text-sm sm:text-lg tracking-wide">GalaxigaSwap</span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 font-bold text-sm sm:text-lg tracking-wide">StarmintSwap</span>
                   <h2 className="text-xl sm:text-2xl font-bold text-white group-hover:text-cyan-100 transition-colors duration-300">SWAP</h2>
                 </div>
               </div>

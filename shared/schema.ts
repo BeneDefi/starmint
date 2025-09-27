@@ -112,7 +112,7 @@ export const purchaseHistory = pgTable("purchase_history", {
   itemName: text("item_name").notNull(),
   itemType: text("item_type").notNull(), // weapon, defense, upgrade
   price: integer("price").notNull(),
-  currency: text("currency").default("GALAXIGA").notNull(),
+  currency: text("currency").default("STARMINT").notNull(),
   purchasedAt: timestamp("purchased_at").defaultNow().notNull(),
 });
 

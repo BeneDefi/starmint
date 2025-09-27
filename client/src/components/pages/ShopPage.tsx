@@ -60,7 +60,7 @@ export default function ShopPage({ onBack }: ShopPageProps) {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   
-  // Calculate GALAXIGA tokens from achievements (placeholder calculation)
+  // Calculate STARMINT tokens from achievements (placeholder calculation)
   const availableTokens = Math.floor(stats.totalScore / 100) + (stats.enemiesDestroyed * 2);
   
   const handlePurchaseAttempt = (item: typeof shopItems[0]) => {
@@ -110,7 +110,7 @@ export default function ShopPage({ onBack }: ShopPageProps) {
             <div className="flex items-center space-x-1 sm:space-x-2">
               <div className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 bg-cyan-400 rounded-full" />
               <span className="text-cyan-400 font-bold text-sm sm:text-base md:text-lg">{availableTokens.toLocaleString()}</span>
-              <span className="text-gray-300 text-xs sm:text-sm md:text-base truncate">GALAXIGA</span>
+              <span className="text-gray-300 text-xs sm:text-sm md:text-base truncate">STARMINT</span>
             </div>
           </div>
         </div>

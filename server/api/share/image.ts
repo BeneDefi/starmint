@@ -24,9 +24,9 @@ export async function generateShareImage(req: Request, res: Response) {
     // For now, return a mock response
     const shareImageData = {
       success: true,
-      imageUrl: `https://galaxiga.game/share/${username}_${score}.png`,
+      imageUrl: `https://starmint.game/share/${username}_${score}.png`,
       metadata: {
-        title: `🚀 ${displayName} scored ${score} points in Galaxiga!`,
+        title: `🚀 ${displayName} scored ${score} points in Starmint!`,
         description: `Ranked #${friendsRank || globalRank} • Join the space battle!`,
         score: parseInt(score as string),
         ranks: { global: parseInt(globalRank as string), friends: parseInt(friendsRank as string) }
