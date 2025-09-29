@@ -15,11 +15,11 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ✅ Trust proxy: enable for Replit environment
+// ✅ Trust proxy: enable for Replit/Render/Heroku/etc.
 if (process.env.NODE_ENV === "production" || process.env.REPL_ID) {
-  app.set("trust proxy", 1); // trust first proxy (Render, Heroku, Replit, etc.)
+  app.set("trust proxy", 1);
 } else {
-  app.set("trust proxy", false); // local dev
+  app.set("trust proxy", false);
 }
 
 // Security middleware
@@ -91,7 +91,7 @@ app.use(express.urlencoded({ extended: false, limit: "10mb" }));
 app.use((req, res, next) => {
   const start = Date.now();
   const pathUrl = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+  let capturedJsonResponse: Record<string, any> | undefined;
 
   const originalResJson = res.json;
   res.json = function (bodyJson, ...args) {
@@ -119,14 +119,18 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
+  // ✅ Centralized error handler
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
+    log(`Error ${status}: ${message}`);
+    if (process.env.NODE_ENV !== "production") {
+      console.error(err);
+    }
     res.status(status).json({ message });
-    throw err;
   });
 
-  // ✅ Always serve Farcaster manifest (dev + prod)
+  // ✅ Always serve Farcaster manifest
   const manifestPath = path.resolve(process.cwd(), "public/.well-known");
   console.log("Serving Farcaster manifest from:", manifestPath);
   app.use("/.well-known", express.static(manifestPath));
@@ -148,7 +152,7 @@ app.use((req, res, next) => {
     });
   }
 
-  const port = Number(process.env.PORT) ||5000;
+  const port = Number(process.env.PORT) || 5000;
   server.listen(
     {
       port,
@@ -156,7 +160,7 @@ app.use((req, res, next) => {
       reusePort: true,
     },
     () => {
-      log(`serving on port ${port}`);
+      log(`🚀 Serving on port ${port}`);
     }
   );
 })();
