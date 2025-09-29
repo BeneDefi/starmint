@@ -8,11 +8,11 @@
     "version": "1",
     "name": "Space Shooter Game",
     "iconUrl": "https://i.imgur.com/GsMcnUq.jpeg",
-    "homeUrl": "https://space-shooter-1-1.onrender.com/",
+    "homeUrl": "https://starmint.onrender.com/",
     "imageUrl": "https://i.imgur.com/GsMcnUq.jpeg",
     "buttonTitle": "Play Game",
     "splashImageUrl": "https://i.imgur.com/GsMcnUq.jpeg",
     "splashBackgroundColor": "#800080",
-    "webhookUrl": "https://space-shooter-1-1.onrender.com/webhook"
+    "webhookUrl": "https://starmint.onrender.com/webhook"
   }
 }
