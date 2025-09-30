@@ -1,9 +1,9 @@
 {
-  "accountAssociation": {
-    "header": "eyJmaWQiOjMyOTM3MCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDgxZUNlQjgzMDVlOTExODc4NjFBOTAyNzQ1OWRFM0M3RDY1MUJkNWYifQ",
-    "payload": "eyJkb21haW4iOiJzcGFjZS1zaG9vdGVyLTEtMS5vbnJlbmRlci5jb20ifQ",
-    "signature": "MHgwNTU1MDA2YWYwZGNkMmI0ZTQwNzFlNzA3NjYyMDI3MTBhM2FiNmUwOWRhMjVhMmQxMzIyNTRkMDg3OWViNWJhNzc0ZGNhZjk2MzJmZjBhMWIzMGQ3MzJmY2Y5N2QzYTlhMjQwMDlhY2ViMzM3NmJjZWIxZTlkOWYwNzg2Mjc3ZjFj"
-  },
+ "accountAssociation": {
+  "header": "eyJmaWQiOjEyMzQ1LCJ0eXBlIjoiY3VzdG9keSIsImtleSI6IjB4QjI5NDM2Q0U0MjYifQ",
+  "payload": "eyJkb21haW4iOiJzdGFybWludC5vbnJlbmRlci5jb20ifQ",
+  "signature": "MHgxMjM0NTY3ODlhYmNkZWYwMTIzNDU2Nzg5YWJjZGVmMDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWYwMTIz"
+},
   "frame": {
     "version": "1",
     "name": "Space Shooter Game",
