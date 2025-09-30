@@ -112,7 +112,14 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
       const getContextAsync = async () => {
         try {
           console.log("🔗 Getting context information...");
-          const contextData = await sdk.context;
+          
+          // Add timeout to prevent hanging
+          const contextPromise = sdk.context;
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('SDK context timeout after 2000ms')), 2000)
+          );
+          
+          const contextData = await Promise.race([contextPromise, timeoutPromise]) as any;
           console.log("📊 Context data received:", contextData);
           console.log("🔍 Deep context analysis:", {
             hasContext: !!contextData,
@@ -127,6 +134,13 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
           setContext(contextData);
 
           // Check if user is already signed in
+          console.log("🔍 Checking context for user:", {
+            hasContextData: !!contextData,
+            hasUser: !!contextData?.user,
+            hasFid: !!contextData?.user?.fid,
+            userValue: contextData?.user
+          });
+          
           if (contextData?.user && contextData.user.fid) {
             console.log("👤 User found in context:", {
               fid: contextData.user.fid,
