@@ -87,14 +87,29 @@ export const useGameState = create<GameState>((set, get) => ({
     
     try {
       console.log('🎮 Starting game save process...');
+      console.log('📊 Game session data:', {
+        score: state.score,
+        level: finalSessionData.maxLevel,
+        enemiesKilled: finalSessionData.enemiesKilled,
+        powerUps: finalSessionData.powerUpsCollected,
+        gameTime: gameTime,
+        startTime: state.sessionData.startTime
+      });
       
-      // Get authentication token - always refresh from Farcaster
-      let authToken = null;
+      // Get authentication token - try localStorage first, then re-authenticate if needed
+      let authToken = localStorage.getItem('authToken');
+      console.log('🔑 Existing auth token in localStorage:', authToken ? `${authToken.substring(0, 20)}...` : 'NOT FOUND');
       
       // Try to get Farcaster user from the playerStats store first
       const playerStatsState = usePlayerStats.getState();
       let farcasterFid = playerStatsState.farcasterFid;
       let displayName = playerStatsState.displayName || 'Player';
+      
+      console.log('📊 PlayerStats store state:', {
+        farcasterFid,
+        displayName,
+        hasStats: !!playerStatsState.stats
+      });
       
       // Fallback to global context if store doesn't have user data
       if (!farcasterFid) {
@@ -109,8 +124,9 @@ export const useGameState = create<GameState>((set, get) => ({
       
       console.log('👤 Using Farcaster data for game save:', { farcasterFid, displayName });
       
-      if (farcasterFid) {
-        console.log('🔐 Authenticating Farcaster user for game save...');
+      // If no auth token or no FID, try to re-authenticate
+      if (!authToken && farcasterFid) {
+        console.log('🔐 No existing token - authenticating Farcaster user for game save...');
         try {
           const authResponse = await fetch('/api/farcaster/auth', {
             method: 'POST',
@@ -141,8 +157,10 @@ export const useGameState = create<GameState>((set, get) => ({
         } catch (authError) {
           console.error('❌ Error during Farcaster authentication:', authError);
         }
-      } else {
+      } else if (!farcasterFid) {
         console.error('❌ No Farcaster FID available - user not properly authenticated');
+      } else {
+        console.log('✅ Using existing auth token from localStorage');
       }
       
       // Save game session to backend (only if we have a valid token)
@@ -150,6 +168,7 @@ export const useGameState = create<GameState>((set, get) => ({
         console.error('❌ CRITICAL: Cannot save game session - No authentication token available');
         console.log('🔧 Debug info: playerStats FID:', farcasterFid);
         console.log('🔧 Debug info: localStorage keys:', Object.keys(localStorage));
+        console.log('🔧 Debug info: localStorage authToken:', localStorage.getItem('authToken'));
         return;
       }
       
