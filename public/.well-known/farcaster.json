@@ -1,9 +1,10 @@
 {
+  
   "accountAssociation": {
-  "header": "eyJmaWQiOjEyMzQ1LCJ0eXBlIjoiY3VzdG9keSIsImtleSI6IjB4QjI5NDM2Q0U0MjYifQ",
-  "payload": "eyJkb21haW4iOiJzdGFybWludC5vbnJlbmRlci5jb20ifQ",
-  "signature": "MHgxMjM0NTY3ODlhYmNkZWYwMTIzNDU2Nzg5YWJjZGVmMDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWYwMTIz"
-},
+    "header": "eyJmaWQiOjMyOTM3MCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDgxZUNlQjgzMDVlOTExODc4NjFBOTAyNzQ1OWRFM0M3RDY1MUJkNWYifQ",
+    "payload": "eyJkb21haW4iOiJzdGFybWludC5vbnJlbmRlci5jb20ifQ",
+    "signature": "MHhkYmI1ODQxNTY0ZTY4MDViMTI3ZThiYzFmOWUzYzM5YzJmZGZhNTQ4NDM3ZWJmYjlhYjAyZTA3MzU3MjdlMTFmMzljZTFiMzM4MDA4MjNlYTJkYzA0NDkzNGJmOWUzMmRlYTMzM2M4NWQwMWFhYmQwMTQ5M2ZkNGM2ZmFmN2E4OTFj"
+  },
   "frame": {
     "version": "1",
     "name": "Space Shooter Game",
