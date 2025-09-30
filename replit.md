@@ -44,6 +44,13 @@ This is a full-stack React + Express.js application featuring a Farcaster miniap
   - ✅ Confirmed React Three Fiber game loads correctly with "STARMINT" space shooter UI
   - ✅ Set up deployment configuration for production autoscale deployment
   - ✅ All systems operational: frontend, backend, database, and Farcaster integration working
+  
+- **2025-09-30**: Fixed critical game save persistence bug
+  - 🐛 **Root Cause**: SDK context promise was hanging indefinitely, preventing fallback test user initialization
+  - ✅ **Fix**: Added 2000ms timeout to SDK context using Promise.race()
+  - ✅ **Result**: Fallback user (FID 54321) now initializes correctly, setting farcasterFid in playerStats store before gameplay
+  - ✅ **Verified**: End-to-end game save flow tested and working - sessions persist correctly to database
+  - 📊 **Impact**: Game sessions, player stats, and profile page now work seamlessly in all scenarios
 
 ## Development Setup
 1. Environment variables are set in the workflow:
