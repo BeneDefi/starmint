@@ -85,6 +85,94 @@ export const useGameState = create<GameState>((set, get) => ({
       ? finalSessionData.bulletsHit / finalSessionData.bulletsShot 
       : 0;
     
+    // Helper function to get user FID from multiple sources
+    const getUserFid = () => {
+      const playerStatsState = usePlayerStats.getState();
+      let fid = playerStatsState.farcasterFid;
+      let displayName = playerStatsState.displayName || 'Player';
+      
+      if (!fid) {
+        const globalContext = (window as any).__miniKitContext__;
+        if (globalContext?.user) {
+          fid = globalContext.user.fid;
+          displayName = globalContext.user.displayName || 'Player';
+        }
+      }
+      
+      return { fid, displayName };
+    };
+    
+    // Helper function to get or refresh auth token
+    const getAuthToken = async (fid: number, displayName: string, forceRefresh = false): Promise<string | null> => {
+      let token = localStorage.getItem('authToken');
+      
+      if (!forceRefresh && token) {
+        console.log('✅ Using existing auth token from localStorage');
+        return token;
+      }
+      
+      console.log(forceRefresh ? '🔄 Refreshing auth token...' : '🔐 Getting new auth token...');
+      
+      try {
+        const authResponse = await fetch('/api/farcaster/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fid,
+            username: `farcaster_${fid}`,
+            displayName,
+          }),
+        });
+        
+        if (authResponse.ok) {
+          const authData = await authResponse.json();
+          if (authData.token) {
+            localStorage.setItem('authToken', authData.token);
+            console.log('✅ Auth token obtained and saved');
+            return authData.token;
+          }
+        }
+        
+        console.error('❌ Failed to get auth token:', authResponse.status);
+        return null;
+      } catch (error) {
+        console.error('❌ Error getting auth token:', error);
+        return null;
+      }
+    };
+    
+    // Helper function to save game session with retry logic
+    const saveGameSession = async (authToken: string, gameData: any): Promise<boolean> => {
+      try {
+        const response = await fetch('/api/game/session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`,
+          },
+          body: JSON.stringify(gameData),
+        });
+        
+        console.log('🌐 Game save API response:', response.status, response.statusText);
+        
+        if (response.ok) {
+          const responseData = await response.json();
+          console.log('✅ Game session saved successfully:', responseData);
+          return true;
+        } else if (response.status === 401) {
+          console.log('⚠️ Auth token expired or invalid (401 response)');
+          return false; // Signal that we need to retry with fresh token
+        } else {
+          const errorText = await response.text();
+          console.error('❌ Failed to save game session:', response.status, errorText);
+          return false;
+        }
+      } catch (error) {
+        console.error('❌ Error during game save:', error);
+        return false;
+      }
+    };
+    
     try {
       console.log('🎮 Starting game save process...');
       console.log('📊 Game session data:', {
@@ -92,86 +180,33 @@ export const useGameState = create<GameState>((set, get) => ({
         level: finalSessionData.maxLevel,
         enemiesKilled: finalSessionData.enemiesKilled,
         powerUps: finalSessionData.powerUpsCollected,
-        gameTime: gameTime,
+        gameTime,
         startTime: state.sessionData.startTime
       });
       
-      // Get authentication token - try localStorage first, then re-authenticate if needed
-      let authToken = localStorage.getItem('authToken');
-      console.log('🔑 Existing auth token in localStorage:', authToken ? `${authToken.substring(0, 20)}...` : 'NOT FOUND');
+      // Get user FID
+      const { fid, displayName } = getUserFid();
       
-      // Try to get Farcaster user from the playerStats store first
-      const playerStatsState = usePlayerStats.getState();
-      let farcasterFid = playerStatsState.farcasterFid;
-      let displayName = playerStatsState.displayName || 'Player';
-      
-      console.log('📊 PlayerStats store state:', {
-        farcasterFid,
-        displayName,
-        hasStats: !!playerStatsState.stats
-      });
-      
-      // Fallback to global context if store doesn't have user data
-      if (!farcasterFid) {
-        console.log('🔄 No FID in store, checking global MiniKit context...');
-        const globalContext = (window as any).__miniKitContext__;
-        if (globalContext?.user) {
-          farcasterFid = globalContext.user.fid;
-          displayName = globalContext.user.displayName || 'Player';
-          console.log('✅ Using FID from global context:', { farcasterFid, displayName });
-        }
-      }
-      
-      console.log('👤 Using Farcaster data for game save:', { farcasterFid, displayName });
-      
-      // If no auth token or no FID, try to re-authenticate
-      if (!authToken && farcasterFid) {
-        console.log('🔐 No existing token - authenticating Farcaster user for game save...');
-        try {
-          const authResponse = await fetch('/api/farcaster/auth', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              fid: farcasterFid,
-              username: `farcaster_${farcasterFid}`,
-              displayName: displayName,
-            }),
-          });
-          
-          console.log('🌐 Auth API response status:', authResponse.status);
-          if (authResponse.ok) {
-            const authData = await authResponse.json();
-            authToken = authData.token;
-            if (authToken) {
-              localStorage.setItem('authToken', authToken);
-              console.log('✅ Farcaster authentication successful, token saved');
-            } else {
-              console.error('❌ No token received from auth response:', authData);
-            }
-          } else {
-            const errorText = await authResponse.text();
-            console.error('❌ Farcaster authentication failed:', authResponse.status, errorText);
-          }
-        } catch (authError) {
-          console.error('❌ Error during Farcaster authentication:', authError);
-        }
-      } else if (!farcasterFid) {
-        console.error('❌ No Farcaster FID available - user not properly authenticated');
-      } else {
-        console.log('✅ Using existing auth token from localStorage');
-      }
-      
-      // Save game session to backend (only if we have a valid token)
-      if (!authToken) {
-        console.error('❌ CRITICAL: Cannot save game session - No authentication token available');
-        console.log('🔧 Debug info: playerStats FID:', farcasterFid);
-        console.log('🔧 Debug info: localStorage keys:', Object.keys(localStorage));
-        console.log('🔧 Debug info: localStorage authToken:', localStorage.getItem('authToken'));
+      if (!fid) {
+        console.error('❌ CRITICAL: No Farcaster FID available - cannot save game');
+        console.log('🔧 Check: playerStats store:', usePlayerStats.getState().farcasterFid);
+        console.log('🔧 Check: global context:', (window as any).__miniKitContext__?.user);
+        set({ gamePhase: "ended", sessionData: finalSessionData });
         return;
       }
       
+      console.log('👤 User identified:', { fid, displayName });
+      
+      // Get auth token
+      let authToken = await getAuthToken(fid, displayName);
+      
+      if (!authToken) {
+        console.error('❌ CRITICAL: Failed to obtain auth token - cannot save game');
+        set({ gamePhase: "ended", sessionData: finalSessionData });
+        return;
+      }
+      
+      // Prepare game session data
       const gameSessionData = {
         score: state.score,
         level: finalSessionData.maxLevel,
@@ -181,25 +216,23 @@ export const useGameState = create<GameState>((set, get) => ({
         accuracy,
       };
       
-      console.log('💾 Attempting to save game session with data:', gameSessionData);
-      console.log('🔑 Using authToken (first 20 chars):', authToken.substring(0, 20) + '...');
+      console.log('💾 Attempting to save game session...');
       
-      const response = await fetch('/api/game/session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`,
-        },
-        body: JSON.stringify(gameSessionData),
-      });
+      // Try to save with current token
+      let saveSuccessful = await saveGameSession(authToken, gameSessionData);
       
-      console.log('🌐 Game save API response:', response.status, response.statusText);
-      
-      if (response.ok) {
-        const responseData = await response.json();
-        console.log('✅ Game session saved successfully:', responseData);
+      // If save failed with 401, retry with fresh token
+      if (!saveSuccessful && authToken) {
+        console.log('🔄 Retrying with fresh auth token...');
+        authToken = await getAuthToken(fid, displayName, true);
         
-        // Update player stats store
+        if (authToken) {
+          saveSuccessful = await saveGameSession(authToken, gameSessionData);
+        }
+      }
+      
+      // If save was successful, update local stats
+      if (saveSuccessful) {
         const playerStats = usePlayerStats.getState();
         playerStats.updateStats({
           gamesPlayed: playerStats.stats.gamesPlayed + 1,
@@ -223,13 +256,12 @@ export const useGameState = create<GameState>((set, get) => ({
             gameTime 
           } 
         }));
-        
       } else {
-        const errorText = await response.text();
-        console.error('❌ Failed to save game session:', response.status, errorText);
+        console.error('❌ Game session save failed after retry attempts');
       }
+      
     } catch (error) {
-      console.error('Error saving game session:', error);
+      console.error('❌ Unexpected error in endGame:', error);
     }
     
     set({ 
