@@ -71,7 +71,11 @@ export const useGameState = create<GameState>((set, get) => ({
   endGame: async (finalStats?: Partial<GameSessionData>) => {
     const state = get();
     const endTime = Date.now();
-    const gameTime = endTime - state.sessionData.startTime;
+    
+    // Guard against invalid startTime (0 = game never started properly)
+    const gameTime = state.sessionData.startTime > 0 
+      ? endTime - state.sessionData.startTime 
+      : 0;
     
     // Update session data with final stats
     const finalSessionData = {
@@ -142,7 +146,7 @@ export const useGameState = create<GameState>((set, get) => ({
     };
     
     // Helper function to save game session with retry logic
-    const saveGameSession = async (authToken: string, gameData: any): Promise<boolean> => {
+    const saveGameSession = async (authToken: string, gameData: any): Promise<{ success: boolean; shouldRetry: boolean }> => {
       try {
         const response = await fetch('/api/game/session', {
           method: 'POST',
@@ -158,18 +162,18 @@ export const useGameState = create<GameState>((set, get) => ({
         if (response.ok) {
           const responseData = await response.json();
           console.log('✅ Game session saved successfully:', responseData);
-          return true;
+          return { success: true, shouldRetry: false };
         } else if (response.status === 401) {
-          console.log('⚠️ Auth token expired or invalid (401 response)');
-          return false; // Signal that we need to retry with fresh token
+          console.log('⚠️ Auth token expired or invalid (401 response) - will retry with fresh token');
+          return { success: false, shouldRetry: true };
         } else {
           const errorText = await response.text();
-          console.error('❌ Failed to save game session:', response.status, errorText);
-          return false;
+          console.error('❌ Failed to save game session (non-auth error):', response.status, errorText);
+          return { success: false, shouldRetry: false };
         }
       } catch (error) {
-        console.error('❌ Error during game save:', error);
-        return false;
+        console.error('❌ Network error during game save:', error);
+        return { success: false, shouldRetry: false };
       }
     };
     
@@ -219,29 +223,40 @@ export const useGameState = create<GameState>((set, get) => ({
       console.log('💾 Attempting to save game session...');
       
       // Try to save with current token
-      let saveSuccessful = await saveGameSession(authToken, gameSessionData);
+      let saveResult = await saveGameSession(authToken, gameSessionData);
       
-      // If save failed with 401, retry with fresh token
-      if (!saveSuccessful && authToken) {
-        console.log('🔄 Retrying with fresh auth token...');
+      // Only retry if we got a 401 (auth failure) - not for other errors
+      if (!saveResult.success && saveResult.shouldRetry && authToken) {
+        console.log('🔄 Token expired - retrying with fresh auth token...');
         authToken = await getAuthToken(fid, displayName, true);
         
         if (authToken) {
-          saveSuccessful = await saveGameSession(authToken, gameSessionData);
+          saveResult = await saveGameSession(authToken, gameSessionData);
         }
       }
       
-      // If save was successful, update local stats
-      if (saveSuccessful) {
+      // If save was successful, update local stats (with null-safe defaults)
+      if (saveResult.success) {
         const playerStats = usePlayerStats.getState();
+        const currentStats = playerStats.stats || {
+          gamesPlayed: 0,
+          totalScore: 0,
+          enemiesDestroyed: 0,
+          timePlayedMinutes: 0,
+          highScore: 0
+        };
+        
+        // Only update timePlayedMinutes if gameTime is valid
+        const timePlayedUpdate = gameTime > 0 ? Math.round(gameTime / 60000) : 0;
+        
         playerStats.updateStats({
-          gamesPlayed: playerStats.stats.gamesPlayed + 1,
-          totalScore: playerStats.stats.totalScore + state.score,
-          enemiesDestroyed: playerStats.stats.enemiesDestroyed + finalSessionData.enemiesKilled,
-          timePlayedMinutes: playerStats.stats.timePlayedMinutes + Math.round(gameTime / 60000),
+          gamesPlayed: (currentStats.gamesPlayed ?? 0) + 1,
+          totalScore: (currentStats.totalScore ?? 0) + state.score,
+          enemiesDestroyed: (currentStats.enemiesDestroyed ?? 0) + finalSessionData.enemiesKilled,
+          timePlayedMinutes: (currentStats.timePlayedMinutes ?? 0) + timePlayedUpdate,
         });
         
-        if (state.score > playerStats.stats.highScore) {
+        if (state.score > (currentStats.highScore ?? 0)) {
           playerStats.updateStats({ highScore: state.score });
         }
         
@@ -257,7 +272,7 @@ export const useGameState = create<GameState>((set, get) => ({
           } 
         }));
       } else {
-        console.error('❌ Game session save failed after retry attempts');
+        console.error('❌ Game session save failed - no retry needed for non-auth errors');
       }
       
     } catch (error) {
