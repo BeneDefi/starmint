@@ -193,8 +193,15 @@ export const useGameState = create<GameState>((set, get) => ({
       
       if (!fid) {
         console.error('❌ CRITICAL: No Farcaster FID available - cannot save game');
+        console.error('⚠️ GAME DATA WILL NOT BE SAVED! Identity must be initialized before gameplay.');
         console.log('🔧 Check: playerStats store:', usePlayerStats.getState().farcasterFid);
         console.log('🔧 Check: global context:', (window as any).__miniKitContext__?.user);
+        
+        // Alert user visibly
+        window.dispatchEvent(new CustomEvent('gameSaveError', { 
+          detail: { message: 'Unable to save game progress. User identity not found.' } 
+        }));
+        
         set({ gamePhase: "ended", sessionData: finalSessionData });
         return;
       }
@@ -249,18 +256,22 @@ export const useGameState = create<GameState>((set, get) => ({
         // Only update timePlayedMinutes if gameTime is valid
         const timePlayedUpdate = gameTime > 0 ? Math.round(gameTime / 60000) : 0;
         
-        playerStats.updateStats({
+        const updatedStats = {
           gamesPlayed: (currentStats.gamesPlayed ?? 0) + 1,
           totalScore: (currentStats.totalScore ?? 0) + state.score,
           enemiesDestroyed: (currentStats.enemiesDestroyed ?? 0) + finalSessionData.enemiesKilled,
           timePlayedMinutes: (currentStats.timePlayedMinutes ?? 0) + timePlayedUpdate,
-        });
+        };
+        
+        playerStats.updateStats(updatedStats);
         
         if (state.score > (currentStats.highScore ?? 0)) {
           playerStats.updateStats({ highScore: state.score });
         }
         
         console.log('📊 Local player stats updated successfully');
+        console.log('✅ NEW STATS:', updatedStats);
+        console.log('✅ GAME DATA PERSISTED TO DATABASE - Profile page will now show real data!');
         
         // Dispatch event to notify profile page to refresh data
         window.dispatchEvent(new CustomEvent('gameCompleted', { 
@@ -268,11 +279,17 @@ export const useGameState = create<GameState>((set, get) => ({
             score: state.score, 
             level: finalSessionData.maxLevel,
             enemiesKilled: finalSessionData.enemiesKilled,
-            gameTime 
+            gameTime,
+            saved: true
           } 
         }));
       } else {
         console.error('❌ Game session save failed - no retry needed for non-auth errors');
+        
+        // Notify about save failure
+        window.dispatchEvent(new CustomEvent('gameSaveError', { 
+          detail: { message: 'Failed to save game progress to server.' } 
+        }));
       }
       
     } catch (error) {

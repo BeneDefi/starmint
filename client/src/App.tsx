@@ -6,7 +6,6 @@ import MiniAppHeader from "./components/MiniAppHeader";
 import { MiniKitProvider, useMiniKit } from "./lib/miniapp/minikit";
 import { useAudio } from "./lib/stores/useAudio";
 import { useGameState } from "./lib/stores/useGameState";
-import { usePlayerStats } from "./lib/stores/usePlayerStats";
 import { GameAccessibility } from "./lib/accessibility/GameAccessibility";
 import { AdvancedHaptics } from "./lib/ux/AdvancedHaptics";
 import "@fontsource/inter";
@@ -18,8 +17,7 @@ function AppContent() {
   const [isMiniApp, setIsMiniApp] = useState(false);
   const { gamePhase } = useGameState();
   const { setBackgroundMusic, setHitSound, setSuccessSound, setShootSound, setGameOverSound } = useAudio();
-  const { isReady, context, notifyReady, user } = useMiniKit();
-  const { setUserData, loadPlayerStats, farcasterFid } = usePlayerStats();
+  const { isReady, context, notifyReady } = useMiniKit();
 
   useEffect(() => {
     // Check if running in Mini App context
@@ -49,40 +47,8 @@ function AppContent() {
     setGameOverSound(gameOverSound);
   }, [setBackgroundMusic, setHitSound, setSuccessSound, setShootSound, setGameOverSound]);
 
-  // Initialize Farcaster identity EARLY so it's available before gameplay
-  useEffect(() => {
-    let activeUser = user;
-    
-    // If no user from MiniKit hook, check global context
-    if (!activeUser) {
-      const globalContext = (window as any).__miniKitContext__;
-      if (globalContext?.user) {
-        console.log('🔐 Found user in global MiniKit context:', globalContext.user);
-        activeUser = globalContext.user;
-      }
-    }
-    
-    // Initialize user identity if available
-    if (activeUser && !farcasterFid) {
-      console.log('🚀 EARLY IDENTITY BOOTSTRAP:', { 
-        fid: activeUser.fid, 
-        displayName: activeUser.displayName 
-      });
-      
-      // Set user data in the store
-      setUserData(
-        activeUser.fid, 
-        activeUser.displayName || `Player ${activeUser.fid}`, 
-        activeUser.pfpUrl || ''
-      );
-      
-      // Load player statistics immediately
-      console.log('📊 Loading player stats early for FID:', activeUser.fid);
-      loadPlayerStats(activeUser.fid);
-    }
-  }, [user, farcasterFid, setUserData, loadPlayerStats]);
-
   // Call sdk.actions.ready() when app content is fully loaded and visible
+  // Note: User identity is initialized by MiniKitProvider before gameplay starts
   useEffect(() => {
     if (isReady) {
       const timer = setTimeout(() => {
