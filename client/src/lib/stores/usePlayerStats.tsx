@@ -23,6 +23,7 @@ interface PlayerStatsState {
   lastSynced: Date | null;
   
   // Actions
+  setStats: (newStats: GameStats) => void;
   updateStats: (newStats: Partial<GameStats>) => void;
   incrementStat: (statKey: keyof GameStats, amount?: number) => void;
   setUserData: (fid: number, displayName: string, profilePicture: string) => void;
@@ -69,6 +70,12 @@ export const usePlayerStats = create<PlayerStatsState>()(
       isLoading: false,
       lastSynced: null,
       
+      // ✅ New action for directly replacing all stats (used by gameState endGame)
+      setStats: (newStats: GameStats) => {
+        set({ stats: newStats });
+        get().syncWithDatabase();
+      },
+      
       updateStats: (newStats: Partial<GameStats>) => {
         set((state) => ({
           stats: { ...state.stats, ...newStats },
@@ -84,7 +91,6 @@ export const usePlayerStats = create<PlayerStatsState>()(
             [statKey]: state.stats[statKey] + amount,
           },
         }));
-        // Auto-sync with database when stats are updated
         get().syncWithDatabase();
       },
       
@@ -171,7 +177,6 @@ export const usePlayerStats = create<PlayerStatsState>()(
         
         const today = new Date().toISOString().split('T')[0];
         
-        // Skip if already logged in today
         if (lastLoginDate === today) return;
         
         try {

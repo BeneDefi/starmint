@@ -43,9 +43,9 @@ const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
 const handleValidationErrors = (req: Request, res: Response, next: NextFunction) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ 
-      error: 'Validation failed', 
-      details: errors.array() 
+    return res.status(400).json({
+      error: 'Validation failed',
+      details: errors.array()
     });
   }
   next();
@@ -66,7 +66,7 @@ const decryptGameState = (encryptedData: string): any => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-    // Farcaster manifest - serve local file
+  // Farcaster manifest - serve local file
   app.get('/.well-known/farcaster.json', (req: Request, res: Response) => {
     res.sendFile(path.resolve(process.cwd(), 'client/public/.well-known/farcaster.json'));
   });
@@ -84,34 +84,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   ], async (req: Request, res: Response) => {
     try {
       const { username, password } = req.body;
-      
+
       // Check if user already exists
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
         return res.status(409).json({ error: 'Username already exists' });
       }
-      
+
       // Hash password
       const saltRounds = 12;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
-      
+
       // Create user
       const user = await storage.createUser({
         username,
         password: hashedPassword
       });
-      
+
       // Generate JWT
       const token = jwt.sign(
         { userId: user.id, username: user.username },
         VALIDATED_JWT_SECRET,
         { expiresIn: '24h' }
       );
-      
-      res.status(201).json({ 
-        message: 'User created successfully', 
-        token, 
-        user: { id: user.id, username: user.username } 
+
+      res.status(201).json({
+        message: 'User created successfully',
+        token,
+        user: { id: user.id, username: user.username }
       });
     } catch (error) {
       console.error('Registration error:', error);
@@ -127,30 +127,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   ], async (req: Request, res: Response) => {
     try {
       const { username, password } = req.body;
-      
+
       // Find user
       const user = await storage.getUserByUsername(username);
       if (!user) {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
-      
+
       // Verify password
       const validPassword = await bcrypt.compare(password, user.password);
       if (!validPassword) {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
-      
+
       // Generate JWT
       const token = jwt.sign(
         { userId: user.id, username: user.username },
         VALIDATED_JWT_SECRET,
         { expiresIn: '24h' }
       );
-      
-      res.json({ 
-        message: 'Login successful', 
-        token, 
-        user: { id: user.id, username: user.username } 
+
+      res.json({
+        message: 'Login successful',
+        token,
+        user: { id: user.id, username: user.username }
       });
     } catch (error) {
       console.error('Login error:', error);
@@ -174,30 +174,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   ], async (req: Request, res: Response) => {
     try {
       const { encryptedGameState, score, level, gameTime } = req.body;
-      
+
       // Decrypt and validate game state
       const gameState = decryptGameState(encryptedGameState);
-      
+
       // Server-side validation of game state
       const expectedScore = validateGameState(gameState);
       const scoreTolerance = Math.max(50, expectedScore * 0.05); // 5% tolerance
-      
+
       if (Math.abs(score - expectedScore) > scoreTolerance) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           error: 'Score validation failed',
-          details: 'Submitted score does not match game state' 
+          details: 'Submitted score does not match game state'
         });
       }
-      
+
       // Additional anti-cheat checks
       if (gameTime < level * 30000) { // Minimum time per level
         return res.status(400).json({ error: 'Impossible completion time' });
       }
-      
+
       if (score > level * 10000) { // Maximum reasonable score per level
         return res.status(400).json({ error: 'Score too high for level' });
       }
-      
+
       // Save high score (would typically be in database)
       await storage.saveHighScore?.(req.user.userId, {
         score,
@@ -205,12 +205,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         gameTime,
         timestamp: new Date().toISOString()
       });
-      
-      res.json({ 
+
+      res.json({
         message: 'Score submitted successfully',
         verified: true,
         score,
-        level 
+        level
       });
     } catch (error) {
       console.error('Score submission error:', error);
@@ -232,9 +232,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = parseInt(req.query.limit as string) || 10;
       const timeframe = (req.query.timeframe as string) || 'all';
       const category = (req.query.category as string) || 'score';
-      
+
       const leaderboard = await storage.getTopPlayers?.(category, timeframe as any, limit) || [];
-      res.json({ 
+      res.json({
         leaderboard,
         metadata: {
           timeframe,
@@ -257,11 +257,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = parseInt(req.params.userId);
       const profile = await storage.getPlayerProfile?.(userId);
-      
+
       if (!profile || !profile.user) {
         return res.status(404).json({ error: 'Player not found' });
       }
-      
+
       res.json(profile);
     } catch (error) {
       console.error('Player profile error:', error);
@@ -277,11 +277,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = parseInt(req.params.userId);
       const stats = await storage.getPlayerStats?.(userId);
-      
+
       if (!stats) {
         return res.status(404).json({ error: 'Player stats not found' });
       }
-      
+
       res.json(stats);
     } catch (error) {
       console.error('Player stats error:', error);
@@ -298,7 +298,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const query = req.query.q as string;
       const limit = parseInt(req.query.limit as string) || 20;
-      
+
       const players = await storage.searchPlayers?.(query, limit) || [];
       res.json({ players, query, limit });
     } catch (error) {
@@ -308,7 +308,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Farcaster FID-based player stats endpoints (required by frontend)
-  
+
   // GET player stats by Farcaster FID
   app.get('/api/player-stats/:farcasterFid', [
     param('farcasterFid').isInt().withMessage('Invalid Farcaster FID'),
@@ -316,7 +316,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   ], async (req: Request, res: Response) => {
     try {
       const farcasterFid = parseInt(req.params.farcasterFid);
-      
+
       // Find user by Farcaster FID
       const user = await storage.getUserByFarcasterFid?.(farcasterFid);
       if (!user) {
@@ -332,7 +332,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           farcasterFid
         });
       }
-      
+
       const stats = await storage.getPlayerStats?.(user.id);
       if (!stats) {
         // Initialize stats if they don't exist
@@ -346,7 +346,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           socialShares: 0,
           friendsInvited: 0,
         });
-        
+
         return res.json({
           totalScore: 0,
           highScore: 0,
@@ -358,7 +358,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           farcasterFid
         });
       }
-      
+
       res.json({
         ...stats,
         farcasterFid
@@ -383,7 +383,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   ], async (req: Request, res: Response) => {
     try {
       const { farcasterFid, ...statsData } = req.body;
-      
+
       // Find or create user by Farcaster FID
       let user = await storage.getUserByFarcasterFid?.(farcasterFid);
       if (!user) {
@@ -395,14 +395,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           displayName: `Player ${farcasterFid}`,
         });
       }
-      
+
       // Update player stats
       await storage.updatePlayerStats?.(user.id, {
         ...statsData,
         updatedAt: new Date(),
       });
-      
-      res.json({ 
+
+      res.json({
         message: 'Player stats updated successfully',
         farcasterFid,
         userId: user.id
@@ -423,7 +423,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Find user by Farcaster FID
       let user = await storage.getUserByFarcasterFid(farcasterFid);
-      
+
       if (!user) {
         // Create user if doesn't exist
         const userData = {
@@ -447,7 +447,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error('Daily login error:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         error: 'Failed to process daily login',
         details: error instanceof Error ? error.message : 'Unknown error'
       });
@@ -464,10 +464,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   ], async (req: Request, res: Response) => {
     try {
       const { fid, username, displayName, pfpUrl } = req.body;
-      
+
       // Find existing user by Farcaster FID
       let user = await storage.getUserByFarcasterFid?.(fid);
-      
+
       if (!user) {
         // Create new user for this Farcaster account
         const userData = {
@@ -478,7 +478,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           farcasterFid: fid,
         };
         user = await storage.createUser(userData);
-        
+
         // Initialize player stats for new user
         const statsExist = await storage.getPlayerStats(user.id);
         if (!statsExist) {
@@ -504,14 +504,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log('User profile update needed for FID:', fid);
         }
       }
-      
+
       // Generate JWT for authenticated requests
       const token = jwt.sign(
         { userId: user.id, username: user.username, farcasterFid: fid },
         VALIDATED_JWT_SECRET,
         { expiresIn: '24h' }
       );
-      
+
       res.json({
         token,
         user: {
@@ -536,19 +536,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const farcasterFid = parseInt(req.params.farcasterFid);
       const limit = parseInt(req.query.limit as string) || 20;
-      
+
       // Find user by Farcaster FID
       const user = await storage.getUserByFarcasterFid?.(farcasterFid);
       if (!user) {
         return res.json({ sessions: [], totalGames: 0 });
       }
-      
+
       // Get player profile which includes recent sessions
       const profile = await storage.getPlayerProfile?.(user.id);
       if (!profile || !profile.recentSessions) {
         return res.json({ sessions: [], totalGames: 0 });
       }
-      
+
       res.json({
         sessions: profile.recentSessions.slice(0, limit),
         totalGames: profile.stats?.gamesPlayed || 0,
@@ -573,17 +573,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const farcasterFid = parseInt(req.params.farcasterFid);
       const limit = parseInt(req.query.limit as string) || 20;
-      
+
       // Find user by Farcaster FID
       const user = await storage.getUserByFarcasterFid?.(farcasterFid);
       if (!user) {
         return res.json({ purchases: [] });
       }
-      
+
       // Get purchase history
       const purchases = await storage.getPurchaseHistory?.(user.id, limit) || [];
-      
-      res.json({ 
+
+      res.json({
         purchases,
         total: purchases.length,
         player: {
@@ -611,9 +611,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   ], async (req: Request, res: Response) => {
     try {
       const { score, level, gameTime, enemiesKilled, powerUpsCollected = 0, accuracy } = req.body;
-      
-      // Save detailed game session
-      await storage.saveGameSession?.(req.user.userId, {
+
+      // Save detailed game session and update player stats
+      const updatedStats = await storage.saveGameSession?.(req.user.userId, {
         score,
         level,
         enemiesKilled,
@@ -623,18 +623,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         gameData: null, // Could store encrypted game replay data
         isValid: true,
       });
-      
-      res.json({ 
+
+      // Fetch updated stats from DB (if saveGameSession doesn’t return them)
+      const playerStats = updatedStats || await storage.getPlayerStats?.(req.user.userId);
+
+      // ✅ Return both session info and updated player totals
+      return res.json({
         message: 'Game session saved successfully',
+        verified: true,
         score,
         level,
-        gameTime
+        gameTime,
+        playerStats
       });
     } catch (error) {
-      console.error('Game session error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      console.error('❌ Game session error:', error);
+      return res.status(500).json({ error: 'Internal server error' });
     }
   });
+
 
   const httpServer = createServer(app);
   return httpServer;
@@ -643,20 +650,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 // Game state validation function
 function validateGameState(gameState: any): number {
   let expectedScore = 0;
-  
+
   // Basic validation - would be more sophisticated in production
   if (gameState.enemiesKilled) {
     expectedScore += gameState.enemiesKilled * (3 + (gameState.level - 1) * 4);
   }
-  
+
   if (gameState.powerUpsCollected) {
     expectedScore += gameState.powerUpsCollected * 50;
   }
-  
+
   if (gameState.bossesKilled) {
     expectedScore += gameState.bossesKilled * (100 + gameState.level * 50);
   }
-  
+
   return Math.max(0, expectedScore);
 }
 

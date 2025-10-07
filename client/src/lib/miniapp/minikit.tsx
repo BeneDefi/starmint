@@ -47,7 +47,7 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
           pfpUrl: userData.pfpUrl
         }),
       });
-      
+
       if (authResponse.ok) {
         const authData = await authResponse.json();
         if (authData.token) {
@@ -112,13 +112,13 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
       const getContextAsync = async () => {
         try {
           console.log("🔗 Getting context information...");
-          
+
           // Add timeout to prevent hanging
           const contextPromise = sdk.context;
-          const timeoutPromise = new Promise((_, reject) => 
+          const timeoutPromise = new Promise((_, reject) =>
             setTimeout(() => reject(new Error('SDK context timeout after 2000ms')), 2000)
           );
-          
+
           const contextData = await Promise.race([contextPromise, timeoutPromise]) as any;
           console.log("📊 Context data received:", contextData);
           console.log("🔍 Deep context analysis:", {
@@ -140,24 +140,24 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
             hasFid: !!contextData?.user?.fid,
             userValue: contextData?.user
           });
-          
+
           if (contextData?.user && contextData.user.fid) {
             console.log("👤 User found in context:", {
               fid: contextData.user.fid,
-              username: contextData.user.username, 
+              username: contextData.user.username,
               displayName: contextData.user.displayName,
               pfpUrl: contextData.user.pfpUrl
             });
-            
+
             const userData = {
               fid: contextData.user.fid,
               username: contextData.user.username,
               displayName: contextData.user.displayName,
               pfpUrl: contextData.user.pfpUrl
             };
-            
+
             console.log("🖼️ Profile picture URL:", userData.pfpUrl);
-            
+
             // Validate and potentially fix profile picture URL
             if (userData.pfpUrl) {
               console.log("✅ Valid profile picture URL found, testing load...");
@@ -168,14 +168,14 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
             } else {
               console.log("⚠️ No profile picture URL in Farcaster context");
             }
-            
+
             setUser(userData);
             setIsConnected(true);
-            
+
             // Update global context for game authentication
             (window as any).__miniKitContext__ = { user: userData, context: contextData };
             console.log("🌐 Global MiniKit context set on window:", (window as any).__miniKitContext__);
-            
+
             // Immediately populate playerStats store to ensure profile page has data
             try {
               const { usePlayerStats } = await import('../stores/usePlayerStats');
@@ -186,13 +186,24 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
             } catch (error) {
               console.error('❌ Failed to set user data in store:', error);
             }
-            
+
             // Authenticate with server immediately
             console.log("🔄 Starting server authentication for Farcaster user...");
             const authToken = await authenticateUserWithServer(userData);
             if (authToken) {
               console.log("✅ MiniKit initialization: Server authentication completed successfully");
-              
+
+              // ✅ Force a fresh profile sync after successful authentication
+              try {
+                const { usePlayerStats } = await import('../stores/usePlayerStats');
+                const playerStatsState = usePlayerStats.getState();
+                console.log('🔁 Fetching live player stats from server after auth...');
+                await playerStatsState.loadPlayerStats(userData.fid);
+                console.log('✅ Player stats synchronized with server');
+              } catch (syncError) {
+                console.error('❌ Failed to sync live player stats after auth:', syncError);
+              }
+
               // Immediately populate playerStats store to ensure game saves work
               const { usePlayerStats } = await import('../stores/usePlayerStats');
               const playerStatsState = usePlayerStats.getState();
@@ -208,27 +219,27 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
             // Set test user when no Farcaster user is available (standalone mode)
             const testUser = {
               fid: 12345,
-              username: "testgamer", 
+              username: "testgamer",
               displayName: "Test Gamer",
               pfpUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face&facepad=2&fm=jpg&q=80"
             };
-            
+
             console.log("🧪 Setting up test user for demo:", testUser);
             console.log("🖼️ Test profile picture URL:", testUser.pfpUrl);
             setUser(testUser);
             setIsConnected(true);
-            
+
             // Update global context for game authentication
             (window as any).__miniKitContext__ = { user: testUser, context: null };
             console.log("🌐 Global MiniKit context set for test user:", (window as any).__miniKitContext__);
-            
+
             // Immediately populate playerStats store to ensure profile page has data
             try {
               const { usePlayerStats } = await import('../stores/usePlayerStats');
               const playerStatsState = usePlayerStats.getState();
               console.log('🔄 Setting test user data in playerStats store for immediate access...');
               playerStatsState.setUserData(testUser.fid, testUser.displayName || testUser.username, testUser.pfpUrl || '');
-              
+
               // Also trigger loading of player stats immediately
               console.log('🔄 Loading player stats for test user...');
               await playerStatsState.loadPlayerStats(testUser.fid);
@@ -236,13 +247,13 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
             } catch (error) {
               console.error('❌ Failed to set test user data in store:', error);
             }
-            
+
             // Authenticate test user with server immediately
             console.log("🔄 Starting server authentication for test user...");
             const authToken = await authenticateUserWithServer(testUser);
             if (authToken) {
               console.log("✅ Test user authentication completed successfully");
-              
+
               // Immediately populate playerStats store to ensure game saves work
               const { usePlayerStats } = await import('../stores/usePlayerStats');
               const playerStatsState = usePlayerStats.getState();
@@ -257,22 +268,22 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
         } catch (contextError) {
           console.log("📱 SDK context failed (running in standalone):", contextError);
           console.log("🧪 Setting up fallback test user for demo purposes");
-          
+
           const fallbackTestUser = {
             fid: 54321,
             username: "standalonegamer",
-            displayName: "Standalone Gamer", 
+            displayName: "Standalone Gamer",
             pfpUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face&facepad=2&fm=jpg&q=80"
           };
-          
+
           console.log("👤 Fallback test user created:", fallbackTestUser);
           setUser(fallbackTestUser);
           setIsConnected(true);
-          
+
           // Update global context for game authentication
           (window as any).__miniKitContext__ = { user: fallbackTestUser, context: null };
           console.log("🌐 Global MiniKit context set for fallback user:", (window as any).__miniKitContext__);
-          
+
           // Immediately populate playerStats store to ensure profile page has data
           try {
             const { usePlayerStats } = await import('../stores/usePlayerStats');
@@ -283,13 +294,13 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
           } catch (error) {
             console.error('❌ Failed to set fallback user data in store:', error);
           }
-          
+
           // Authenticate fallback test user with server immediately
           console.log("🔄 Starting server authentication for fallback user...");
           const authToken = await authenticateUserWithServer(fallbackTestUser);
           if (authToken) {
             console.log("✅ Fallback user authentication completed successfully");
-            
+
             // Immediately populate playerStats store to ensure game saves work
             const { usePlayerStats } = await import('../stores/usePlayerStats');
             const playerStatsState = usePlayerStats.getState();
@@ -309,7 +320,7 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
       // Mark as ready immediately (don't wait for context)
       setIsReady(true);
       console.log("🎉 MiniKit initialization completed");
-      
+
       // Global context will be set by the async function above
     };
 

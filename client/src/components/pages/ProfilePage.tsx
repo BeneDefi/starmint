@@ -23,9 +23,9 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
   useEffect(() => {
     console.log('🔍 ProfilePage useEffect triggered with user:', user);
-    
+
     let activeUser = user;
-    
+
     // If no user from MiniKit hook, check global context
     if (!activeUser) {
       console.log('❌ No MiniKit user context from hook, checking global context...');
@@ -35,7 +35,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         activeUser = globalContext.user;
       }
     }
-    
+
     if (activeUser) {
       console.log('👤 Using user context:', { fid: activeUser.fid, displayName: activeUser.displayName });
       // Set user data in the store
@@ -43,22 +43,22 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       // Load player statistics
       console.log('📊 About to call loadPlayerStats with FID:', activeUser.fid);
       loadPlayerStats(activeUser.fid);
-      
+
       // Check daily login
       checkDailyLogin();
-      
+
       // Load social data
       loadSocialData(activeUser.fid);
-      
+
       // Load detailed game history
       loadGameHistory(activeUser.fid);
     } else {
       console.log('❌ No user context available anywhere, checking for persisted data...');
-      
+
       // Fallback: try to get user data from persisted store or JWT token
       const persistedFid = farcasterFid;
       console.log('🔄 Checking persisted FID from store:', persistedFid);
-      
+
       if (persistedFid) {
         console.log('✅ Using persisted FID for data loading:', persistedFid);
         // Load data with persisted FID
@@ -77,7 +77,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   useEffect(() => {
     const handleGameCompleted = (event: CustomEvent) => {
       console.log('🎮 Game completed event received:', event.detail);
-      
+
       // Use same fallback mechanism as initial load
       let refreshUser = user;
       if (!refreshUser) {
@@ -87,7 +87,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
           refreshUser = globalContext.user;
         }
       }
-      
+
       if (refreshUser) {
         // Refresh player stats and game history after game completion
         setTimeout(() => {
@@ -109,7 +109,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
     };
 
     window.addEventListener('gameCompleted', handleGameCompleted as EventListener);
-    
+
     return () => {
       window.removeEventListener('gameCompleted', handleGameCompleted as EventListener);
     };
@@ -118,12 +118,12 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   const loadSocialData = async (fid: number) => {
     try {
       const leaderboard = SocialLeaderboard.getInstance();
-      
+
       // Get player's global rank (mock implementation)
       const globalBoard = await leaderboard.getLeaderboard({ timeframe: 'allTime', friends: false });
       const rank = globalBoard.findIndex(entry => entry.fid === fid) + 1;
       setPlayerRank(rank > 0 ? rank : null);
-      
+
       // Get friends ranking
       const friends = await leaderboard.getFriendsRanking(fid);
       setFriendsRanking(friends.slice(0, 3)); // Top 3 friends
@@ -140,7 +140,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         const data = await response.json();
         const sessions = Array.isArray(data.sessions) ? data.sessions : [];
         setGameSessions(sessions);
-        
+
         // Create recent activity from game sessions with validation
         const activities = sessions.slice(0, 5).map((session: any, index: number) => {
           // Validate session data and provide fallbacks
@@ -148,7 +148,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
           const safeLevel = typeof session.level === 'number' ? session.level : 1;
           const safeGameTime = typeof session.gameTime === 'number' ? session.gameTime : 0;
           const safePlayedAt = session.playedAt ? new Date(session.playedAt) : new Date();
-          
+
           return {
             id: `session-${session.id || index}`,
             type: 'game',
@@ -195,18 +195,18 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
   // Calculate average score
   const averageScore = stats.gamesPlayed > 0 ? Math.round(stats.totalScore / stats.gamesPlayed) : 0;
-  
+
   // Calculate accuracy from game sessions with error handling
   const calculateOverallAccuracy = () => {
     if (!Array.isArray(gameSessions) || gameSessions.length === 0) return 0;
-    const accuracySessions = gameSessions.filter(s => 
+    const accuracySessions = gameSessions.filter(s =>
       s && typeof s.accuracy === 'number' && s.accuracy >= 0 && s.accuracy <= 1
     );
     if (accuracySessions.length === 0) return 0;
     const totalAccuracy = accuracySessions.reduce((sum, s) => sum + (s.accuracy * 100), 0);
     return Math.round(totalAccuracy / accuracySessions.length);
   };
-  
+
   const overallAccuracy = calculateOverallAccuracy();
 
   // Calculate total STARMINT rewards
@@ -226,7 +226,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   // Calculate progress for locked achievements
   function getAchievementProgress(achievement: any, stats: any): number {
     if (achievement.condition(stats)) return 100;
-    
+
     switch (achievement.id) {
       case 'centurion': return Math.min((stats.enemiesDestroyed / 100) * 100, 100);
       case 'high_scorer': return Math.min((stats.highScore / 10000) * 100, 100);
@@ -255,7 +255,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       <div className="absolute inset-0 bg-black/40" />
       <div className="absolute top-10 right-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
       <div className="absolute bottom-0 right-0 w-80 h-80 bg-cyan-400/30 rounded-full blur-2xl" />
-      
+
       {/* Stars */}
       {Array.from({ length: 50 }, (_, i) => (
         <div
@@ -348,7 +348,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                     <span className="text-white font-bold">{experienceLevel}</span>
                   </div>
                   <div className="flex-1 bg-slate-700 rounded-full h-1.5 sm:h-2">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-cyan-400 to-blue-500 h-1.5 sm:h-2 rounded-full transition-all duration-300"
                       style={{ width: `${(currentLevelProgress / 1000) * 100}%` }}
                     />
@@ -359,7 +359,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 </div>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-4">
               <div className="text-center bg-slate-700/30 rounded-lg p-2 sm:p-3">
                 <div className="text-lg sm:text-xl md:text-2xl font-bold text-cyan-400">{stats.highScore.toLocaleString()}</div>
@@ -378,7 +378,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 <div className="text-xs sm:text-sm text-gray-400">Time Played</div>
               </div>
             </div>
-            
+
             {/* STARMINT Token Balance */}
             <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg p-3 sm:p-4 border border-cyan-500/30">
               <div className="flex items-center justify-between gap-2">
@@ -470,7 +470,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 {achievementsWithStatus.filter(a => a.unlocked).length}/{achievementsWithStatus.length}
               </div>
             </div>
-            
+
             <div className="space-y-2 sm:space-y-3 max-h-64 sm:max-h-80 overflow-y-auto">
               {isLoading ? (
                 <div className="text-center py-4 text-gray-400">
@@ -491,17 +491,16 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                       default: return Shield;
                     }
                   };
-                  
+
                   const IconComponent = getAchievementIcon(achievement.id);
-                  
+
                   return (
                     <div
                       key={achievement.id}
-                      className={`p-2 sm:p-3 rounded-lg border transition-all duration-300 ${
-                        achievement.unlocked
+                      className={`p-2 sm:p-3 rounded-lg border transition-all duration-300 ${achievement.unlocked
                           ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/30'
                           : 'bg-slate-700/50 border-gray-600/30'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-start space-x-3 sm:space-x-4">
                         <div className="text-lg sm:text-xl md:text-2xl shrink-0">{achievement.icon}</div>
@@ -513,7 +512,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                             {achievement.unlocked && <Star className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 shrink-0" />}
                           </div>
                           <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2 line-clamp-2">{achievement.description}</p>
-                          
+
                           {/* Progress bar for locked achievements */}
                           {!achievement.unlocked && achievement.progress > 0 && (
                             <div className="space-y-1 mb-2">
@@ -522,14 +521,14 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                                 <span className="text-xs text-cyan-400">{Math.round(achievement.progress)}%</span>
                               </div>
                               <div className="w-full bg-slate-600 rounded-full h-1">
-                                <div 
+                                <div
                                   className="bg-gradient-to-r from-cyan-400 to-blue-500 h-1 rounded-full transition-all duration-300"
                                   style={{ width: `${achievement.progress}%` }}
                                 />
                               </div>
                             </div>
                           )}
-                          
+
                           {/* Reward display */}
                           <div className="flex items-center space-x-1 sm:space-x-2 mt-1 sm:mt-2">
                             <Trophy className="w-3 h-3 text-yellow-400" />
@@ -552,7 +551,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
               <h3 className="text-lg sm:text-xl font-bold text-white">Performance Analytics</h3>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-4">
               <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-lg p-3 sm:p-4 border border-purple-500/30">
                 <div className="flex items-center justify-between gap-2">
@@ -566,7 +565,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                   </div>
                 </div>
               </div>
-              
+
               <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg p-3 sm:p-4 border border-cyan-500/30">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center space-x-2 min-w-0">
@@ -580,7 +579,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-lg p-3 sm:p-4 border border-green-500/30">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center space-x-2 min-w-0">
@@ -605,7 +604,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 </div>
               )}
             </div>
-            
+
             <div className="space-y-2 sm:space-y-3 max-h-80 overflow-y-auto">
               {loadingHistory ? (
                 <div className="text-center py-4 text-gray-400">
@@ -616,11 +615,11 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                   const gameDate = new Date(session.playedAt);
                   const isToday = gameDate.toDateString() === new Date().toDateString();
                   const isYesterday = gameDate.toDateString() === new Date(Date.now() - 86400000).toDateString();
-                  
+
                   let dateLabel = gameDate.toLocaleDateString();
                   if (isToday) dateLabel = 'Today';
                   else if (isYesterday) dateLabel = 'Yesterday';
-                  
+
                   return (
                     <div key={session.id || index} className="p-3 sm:p-4 bg-slate-700/50 rounded-lg border border-gray-600/30 hover:border-cyan-500/30 transition-all duration-300">
                       <div className="flex items-start justify-between gap-3">
@@ -685,7 +684,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" />
               <h3 className="text-lg sm:text-xl font-bold text-white">Recent Activity</h3>
             </div>
-            
+
             <div className="space-y-2 sm:space-y-3">
               {recentActivity.length > 0 ? (
                 recentActivity.map((activity, index) => (
@@ -700,10 +699,10 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                       </div>
                     </div>
                     <div className="text-xs text-gray-500">
-                      {activity.timestamp ? 
+                      {activity.timestamp ?
                         activity.timestamp.toLocaleDateString() === new Date().toLocaleDateString() ? 'Today' :
-                        activity.timestamp.toLocaleDateString() === new Date(Date.now() - 86400000).toLocaleDateString() ? 'Yesterday' :
-                        activity.timestamp.toLocaleDateString()
+                          activity.timestamp.toLocaleDateString() === new Date(Date.now() - 86400000).toLocaleDateString() ? 'Yesterday' :
+                            activity.timestamp.toLocaleDateString()
                         : 'Recent'
                       }
                     </div>
@@ -725,7 +724,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                     </div>
                     <div className="text-xs text-gray-500">Best</div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
@@ -740,7 +739,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                     </div>
                     <div className="text-xs text-gray-500">All time</div>
                   </div>
-                  
+
                   {achievementsWithStatus.filter(a => a.unlocked).length > 0 && (
                     <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
                       <div className="flex items-center space-x-3">
@@ -770,7 +769,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               <Package className="w-6 h-6 text-cyan-400" />
               <h3 className="text-xl font-bold text-white">Inventory & Power-ups</h3>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-3">
               {/* Show power-up collection stats */}
               <div className="bg-slate-700/50 rounded-lg p-3 border border-cyan-500/30">
@@ -780,7 +779,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 </div>
                 <p className="text-xs text-gray-400">Protection power-up</p>
               </div>
-              
+
               <div className="bg-slate-700/50 rounded-lg p-3 border border-orange-500/30">
                 <div className="flex items-center space-x-2 mb-1">
                   <Zap className="w-4 h-4 text-orange-400" />
@@ -788,10 +787,10 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 </div>
                 <p className="text-xs text-gray-400">Speed boost power-up</p>
               </div>
-              
+
               {/* Inventory items from purchase history will be shown here */}
             </div>
-            
+
             <div className="text-center py-4 text-gray-400">
               <p className="text-sm">Collect items by playing the game!</p>
             </div>
@@ -807,19 +806,18 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                   <span className="text-cyan-400 text-xs font-medium">{purchaseHistory.length}</span>
                 </div>
               </div>
-              
+
               <div className="space-y-3 max-h-64 overflow-y-auto">
                 {purchaseHistory.slice(0, 10).map((purchase) => (
                   <div key={purchase.id} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
                     <div className="flex items-center space-x-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                        purchase.itemType === 'weapons' ? 'bg-red-500/20 border border-red-500/50' :
-                        purchase.itemType === 'defense' ? 'bg-blue-500/20 border border-blue-500/50' :
-                        'bg-green-500/20 border border-green-500/50'
-                      }`}>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${purchase.itemType === 'weapons' ? 'bg-red-500/20 border border-red-500/50' :
+                          purchase.itemType === 'defense' ? 'bg-blue-500/20 border border-blue-500/50' :
+                            'bg-green-500/20 border border-green-500/50'
+                        }`}>
                         {purchase.itemType === 'weapons' ? <Zap className="w-4 h-4 text-red-400" /> :
-                         purchase.itemType === 'defense' ? <Shield className="w-4 h-4 text-blue-400" /> :
-                         <Rocket className="w-4 h-4 text-green-400" />}
+                          purchase.itemType === 'defense' ? <Shield className="w-4 h-4 text-blue-400" /> :
+                            <Rocket className="w-4 h-4 text-green-400" />}
                       </div>
                       <div>
                         <h4 className="font-medium text-white text-sm">{purchase.itemName}</h4>
@@ -855,12 +853,12 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 <Heart className="w-6 h-6 text-pink-400" />
                 <h3 className="text-xl font-bold text-white">Farcaster Profile</h3>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg border border-blue-500/30">
-                  <img 
-                    src={user.pfpUrl} 
-                    alt={user.displayName || 'Profile'} 
+                  <img
+                    src={user.pfpUrl}
+                    alt={user.displayName || 'Profile'}
                     className="w-12 h-12 rounded-full border-2 border-cyan-400"
                   />
                   <div>
@@ -869,7 +867,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                     <p className="text-xs text-gray-400">FID: {user.fid}</p>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-slate-700/50 rounded-lg p-3 text-center">
                     <div className="text-lg font-bold text-cyan-400">{stats.socialShares}</div>
