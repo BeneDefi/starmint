@@ -8,11 +8,11 @@
   "frame": {
     "version": "1",
     "name": "Space Shooter Game",
-    "iconUrl": "https://i.imgur.com/GsMcnUq.jpeg",
+    "iconUrl": "https://i.imgur.com/7ioOqIO.jpeg",
     "homeUrl": "https://starmint.onrender.com/",
-    "imageUrl": "https://i.imgur.com/GsMcnUq.jpeg",
+    "imageUrl": "https://i.imgur.com/g0efTKV.jpeg",
     "buttonTitle": "Play Game",
-    "splashImageUrl": "https://i.imgur.com/GsMcnUq.jpeg",
+    "splashImageUrl": "https://i.imgur.com/7ioOqIO.jpeg",
     "splashBackgroundColor": "#800080",
     "webhookUrl": "https://starmint.onrender.com/webhook"
   }
