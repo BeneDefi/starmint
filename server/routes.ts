@@ -598,6 +598,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // GET friends list by Farcaster FID (mock endpoint)
+  app.get('/api/friends/:farcasterFid', [
+    param('farcasterFid').isInt().withMessage('Invalid Farcaster FID'),
+    handleValidationErrors
+  ], async (req: Request, res: Response) => {
+    try {
+      // Mock implementation - returns empty array for now
+      // In the future, this would integrate with Farcaster's social graph API
+      res.json([]);
+    } catch (error) {
+      console.error('Friends list error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   // Enhanced game session submission
   app.post('/api/game/session', [
     authenticateToken,
