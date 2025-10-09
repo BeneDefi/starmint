@@ -121,12 +121,24 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
       // Get player's global rank (mock implementation)
       const globalBoard = await leaderboard.getLeaderboard({ timeframe: 'allTime', friends: false });
-      const rank = globalBoard.findIndex(entry => entry.fid === fid) + 1;
-      setPlayerRank(rank > 0 ? rank : null);
+      
+      // Ensure globalBoard is an array before calling findIndex
+      if (Array.isArray(globalBoard)) {
+        const rank = globalBoard.findIndex(entry => entry.fid === fid) + 1;
+        setPlayerRank(rank > 0 ? rank : null);
+      } else {
+        console.error('globalBoard is not an array:', globalBoard);
+        setPlayerRank(null);
+      }
 
       // Get friends ranking
       const friends = await leaderboard.getFriendsRanking(fid);
-      setFriendsRanking(friends.slice(0, 3)); // Top 3 friends
+      if (Array.isArray(friends)) {
+        setFriendsRanking(friends.slice(0, 3)); // Top 3 friends
+      } else {
+        console.error('friends is not an array:', friends);
+        setFriendsRanking([]);
+      }
     } catch (error) {
       console.error('Failed to load social data:', error);
     }

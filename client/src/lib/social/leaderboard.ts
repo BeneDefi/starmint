@@ -92,15 +92,39 @@ export interface LeaderboardEntry {
     }
   
     private async fetchLeaderboardData(filters: LeaderboardFilters): Promise<LeaderboardEntry[]> {
-      // Mock implementation - replace with actual API call
-      const timeframe = filters.timeframe === 'allTime' ? 'all' : filters.timeframe;
-      const response = await fetch(`/api/game/leaderboard?timeframe=${timeframe}&limit=50`);
-  
-      if (!response.ok) {
-        throw new Error('Failed to fetch leaderboard');
+      try {
+        const timeframe = filters.timeframe === 'allTime' ? 'all' : filters.timeframe;
+        const response = await fetch(`/api/game/leaderboard?timeframe=${timeframe}&limit=50`);
+    
+        if (!response.ok) {
+          console.warn(`Leaderboard API returned ${response.status}, using mock data`);
+          return this.getMockLeaderboard();
+        }
+    
+        // Check if response is JSON before parsing
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          console.warn('Leaderboard API returned non-JSON response, using mock data');
+          return this.getMockLeaderboard();
+        }
+    
+        const data = await response.json();
+        
+        // Handle different response formats
+        if (Array.isArray(data)) {
+          return data;
+        } else if (data && Array.isArray(data.leaderboard)) {
+          return data.leaderboard;
+        } else if (data && Array.isArray(data.entries)) {
+          return data.entries;
+        } else {
+          console.error('Unexpected leaderboard response format:', data);
+          return this.getMockLeaderboard();
+        }
+      } catch (error) {
+        console.error('Error fetching leaderboard data:', error);
+        return this.getMockLeaderboard();
       }
-  
-      return response.json();
     }
   
     private async submitScoreToBackend(score: number, userFid: number): Promise<void> {
@@ -120,8 +144,20 @@ export interface LeaderboardEntry {
       // Mock implementation - replace with Farcaster API call
       try {
         const response = await fetch(`/api/friends/${userFid}`);
-        if (!response.ok) throw new Error('Failed to fetch friends');
-        return response.json();
+        if (!response.ok) {
+          console.warn(`Friends API returned ${response.status}, returning empty list`);
+          return [];
+        }
+        
+        // Check if response is JSON before parsing
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          console.warn('Friends API returned non-JSON response, returning empty list');
+          return [];
+        }
+        
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
       } catch (error) {
         console.error('Failed to get friends list:', error);
         return [];
