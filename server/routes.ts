@@ -396,11 +396,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Update player stats
-      await storage.updatePlayerStats?.(user.id, {
-        ...statsData,
-        updatedAt: new Date(),
-      });
+      // Update player stats (remove updatedAt if it was sent from client)
+      const { updatedAt, ...cleanStatsData } = statsData;
+      await storage.updatePlayerStats?.(user.id, cleanStatsData);
 
       res.json({
         message: 'Player stats updated successfully',
