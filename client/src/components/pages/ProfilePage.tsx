@@ -25,7 +25,6 @@ import {
 import { useMiniKit } from "../../lib/miniapp/minikit";
 import { usePlayerStats } from "../../lib/stores/usePlayerStats";
 import { useEffect, useState } from "react";
-import { ACHIEVEMENTS } from "../../lib/web3/achievements";
 import { SocialLeaderboard } from "../../lib/social/leaderboard";
 
 interface ProfilePageProps {
@@ -51,7 +50,6 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   } = usePlayerStats();
   const [playerRank, setPlayerRank] = useState<number | null>(null);
   const [friendsRanking, setFriendsRanking] = useState<any[]>([]);
-  const [totalRewards, setTotalRewards] = useState(0);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [gameSessions, setGameSessions] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -306,48 +304,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
   const overallAccuracy = calculateOverallAccuracy();
 
-  // Calculate total STARMINT rewards
-  useEffect(() => {
-    const unlockedAchievements = ACHIEVEMENTS.filter((achievement) =>
-      achievement.condition(stats),
-    );
-    const totalTokens = unlockedAchievements.reduce(
-      (sum, achievement) => sum + achievement.reward,
-      0,
-    );
-    setTotalRewards(totalTokens);
-  }, [stats]);
-
-  // Map achievements with unlock status - show all achievements
-  const achievementsWithStatus = ACHIEVEMENTS.map((achievement) => ({
-    ...achievement,
-    unlocked: achievement.condition(stats),
-    progress: getAchievementProgress(achievement, stats),
-  }));
-
-  // Calculate progress for locked achievements
-  function getAchievementProgress(achievement: any, stats: any): number {
-    if (achievement.condition(stats)) return 100;
-
-    switch (achievement.id) {
-      case "centurion":
-        return Math.min((stats.enemiesDestroyed / 100) * 100, 100);
-      case "high_scorer":
-        return Math.min((stats.highScore / 10000) * 100, 100);
-      case "social_butterfly":
-        return Math.min((stats.socialShares / 5) * 100, 100);
-      case "friend_magnet":
-        return Math.min((stats.friendsInvited / 3) * 100, 100);
-      case "dedicated_player":
-        return Math.min((stats.streakDays / 7) * 100, 100);
-      case "marathon_gamer":
-        return Math.min((stats.timePlayedMinutes / 60) * 100, 100);
-      default:
-        return 0;
-    }
-  }
-
-  // Get player title based on achievements and stats
+  // Get player title based on stats
   const getPlayerTitle = () => {
     if (stats.highScore > 50000)
       return { title: "Space Legend", color: "text-purple-400", icon: Crown };
@@ -355,12 +312,6 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       return { title: "Elite Warrior", color: "text-orange-400", icon: Medal };
     if (stats.gamesPlayed > 50)
       return { title: "Veteran Pilot", color: "text-blue-400", icon: Award };
-    if (achievementsWithStatus.filter((a) => a.unlocked).length > 3)
-      return {
-        title: "Achievement Hunter",
-        color: "text-green-400",
-        icon: Trophy,
-      };
     return { title: "Space Cadet", color: "text-gray-400", icon: User };
   };
 
@@ -563,21 +514,6 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               </div>
             )}
 
-            {/* STARMINT Token Balance */}
-            <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg p-3 sm:p-4 border border-cyan-500/30">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center space-x-2 min-w-0">
-                  <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 shrink-0" />
-                  <span className="text-sm sm:text-base text-white font-medium truncate">
-                    STARMINT Tokens
-                  </span>
-                </div>
-                <div className="text-xl sm:text-2xl font-bold text-yellow-400">
-                  {totalRewards.toLocaleString()}
-                </div>
-              </div>
-            </div>
-
             {/* Enhanced Streak & Login Stats */}
             <div className="grid grid-cols-2 gap-2 sm:gap-4 mt-3 sm:mt-4">
               {/* Current Streak */}
@@ -675,121 +611,6 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               </div>
             </div>
           )}
-
-          {/* Achievements */}
-          <div className="bg-slate-800/60 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-cyan-500/30">
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <div className="flex items-center space-x-2 sm:space-x-3">
-                <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400" />
-                <h3 className="text-lg sm:text-xl font-bold text-white">
-                  Achievements
-                </h3>
-              </div>
-              <div className="text-xs sm:text-sm text-gray-400">
-                {achievementsWithStatus.filter((a) => a.unlocked).length}/
-                {achievementsWithStatus.length}
-              </div>
-            </div>
-
-            <div className="space-y-2 sm:space-y-3 max-h-64 sm:max-h-80 overflow-y-auto">
-              {isLoading ? (
-                <div className="text-center py-4 text-gray-400">
-                  Loading achievements...
-                </div>
-              ) : (
-                achievementsWithStatus.map((achievement) => {
-                  // Get the appropriate icon component
-                  const getAchievementIcon = (id: string) => {
-                    switch (id) {
-                      case "first_blood":
-                        return Target;
-                      case "centurion":
-                        return Zap;
-                      case "high_scorer":
-                        return Trophy;
-                      case "social_butterfly":
-                        return Star;
-                      case "friend_magnet":
-                        return Users;
-                      case "dedicated_player":
-                        return Calendar;
-                      case "marathon_gamer":
-                        return Clock;
-                      default:
-                        return Shield;
-                    }
-                  };
-
-                  const IconComponent = getAchievementIcon(achievement.id);
-
-                  return (
-                    <div
-                      key={achievement.id}
-                      className={`p-2 sm:p-3 rounded-lg border transition-all duration-300 ${
-                        achievement.unlocked
-                          ? "bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/30"
-                          : "bg-slate-700/50 border-gray-600/30"
-                      }`}
-                    >
-                      <div className="flex items-start space-x-3 sm:space-x-4">
-                        <div className="text-lg sm:text-xl md:text-2xl shrink-0">
-                          {achievement.icon}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-1 sm:space-x-2 mb-1">
-                            <h4
-                              className={`font-medium text-sm sm:text-base truncate ${achievement.unlocked ? "text-white" : "text-gray-400"}`}
-                            >
-                              {achievement.name}
-                            </h4>
-                            {achievement.unlocked && (
-                              <Star className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 shrink-0" />
-                            )}
-                          </div>
-                          <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2 line-clamp-2">
-                            {achievement.description}
-                          </p>
-
-                          {/* Progress bar for locked achievements */}
-                          {!achievement.unlocked &&
-                            achievement.progress > 0 && (
-                              <div className="space-y-1 mb-2">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-xs text-gray-400">
-                                    Progress
-                                  </span>
-                                  <span className="text-xs text-cyan-400">
-                                    {Math.round(achievement.progress)}%
-                                  </span>
-                                </div>
-                                <div className="w-full bg-slate-600 rounded-full h-1">
-                                  <div
-                                    className="bg-gradient-to-r from-cyan-400 to-blue-500 h-1 rounded-full transition-all duration-300"
-                                    style={{
-                                      width: `${achievement.progress}%`,
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            )}
-
-                          {/* Reward display */}
-                          <div className="flex items-center space-x-1 sm:space-x-2 mt-1 sm:mt-2">
-                            <Trophy className="w-3 h-3 text-yellow-400" />
-                            <span
-                              className={`text-xs font-medium ${achievement.unlocked ? "text-yellow-400" : "text-gray-500"}`}
-                            >
-                              {achievement.reward} STARMINT
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
 
           {/* Enhanced Statistics */}
           <div className="bg-slate-800/60 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-cyan-500/30">
