@@ -871,38 +871,6 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                     </div>
                     <div className="text-xs text-gray-500">All time</div>
                   </div>
-
-                  {achievementsWithStatus.filter((a) => a.unlocked).length >
-                    0 && (
-                    <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-yellow-500/20 rounded-full flex items-center justify-center">
-                          <Award className="w-4 h-4 text-yellow-400" />
-                        </div>
-                        <div>
-                          <p className="text-white text-sm font-medium">
-                            Achievement Progress
-                          </p>
-                          <p className="text-gray-400 text-xs">
-                            {
-                              achievementsWithStatus.filter((a) => a.unlocked)
-                                .length
-                            }{" "}
-                            of {achievementsWithStatus.length} unlocked
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {Math.round(
-                          (achievementsWithStatus.filter((a) => a.unlocked)
-                            .length /
-                            achievementsWithStatus.length) *
-                            100,
-                        )}
-                        %
-                      </div>
-                    </div>
-                  )}
                 </>
               )}
             </div>
