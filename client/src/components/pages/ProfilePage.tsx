@@ -13,7 +13,7 @@ interface ProfilePageProps {
 
 export default function ProfilePage({ onBack }: ProfilePageProps) {
   const { user } = useMiniKit();
-  const { stats, isLoading, loadPlayerStats, setUserData, checkDailyLogin, purchaseHistory, currentStreak, lastLoginDate, farcasterFid } = usePlayerStats();
+  const { stats, isLoading, loadPlayerStats, setUserData, checkDailyLogin, purchaseHistory, currentStreak, lastLoginDate, farcasterFid, displayName, profilePicture } = usePlayerStats();
   const [playerRank, setPlayerRank] = useState<number | null>(null);
   const [friendsRanking, setFriendsRanking] = useState<any[]>([]);
   const [totalRewards, setTotalRewards] = useState(0);
@@ -300,16 +300,15 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
           {/* Player Stats */}
           <div className="bg-slate-800/60 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-cyan-500/30">
             <div className="flex items-center space-x-3 sm:space-x-4 mb-3 sm:mb-4">
-              {user ? (
+              {(user || displayName) ? (
                 <div className="relative w-12 h-12 sm:w-16 sm:h-16">
-                  {user.pfpUrl ? (
+                  {(user?.pfpUrl || profilePicture) ? (
                     <img
-                      src={user.pfpUrl}
-                      alt={user.displayName || 'User profile'}
+                      src={user?.pfpUrl || profilePicture || ''}
+                      alt={(user?.displayName || displayName) || 'User profile'}
                       className="w-full h-full rounded-full border-2 border-cyan-400 object-cover"
                       onError={(e) => {
-                        // Fallback to default avatar if image fails to load
-                        console.log('Profile picture failed to load:', user.pfpUrl);
+                        console.log('Profile picture failed to load:', user?.pfpUrl || profilePicture);
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
                         const fallbackDiv = target.nextElementSibling as HTMLDivElement;
@@ -318,13 +317,13 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                         }
                       }}
                       onLoad={() => {
-                        console.log('Profile picture loaded successfully:', user.pfpUrl);
+                        console.log('Profile picture loaded successfully:', user?.pfpUrl || profilePicture);
                       }}
                     />
                   ) : null}
-                  <div className={`absolute inset-0 w-full h-full bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center border-2 border-cyan-400 ${user.pfpUrl ? 'hidden' : ''}`}>
+                  <div className={`absolute inset-0 w-full h-full bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center border-2 border-cyan-400 ${(user?.pfpUrl || profilePicture) ? 'hidden' : ''}`}>
                     <span className="text-white font-bold text-sm sm:text-base">
-                      {user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U'}
+                      {(user?.displayName || displayName) ? (user?.displayName || displayName || '').charAt(0).toUpperCase() : 'U'}
                     </span>
                   </div>
                 </div>
@@ -336,7 +335,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               <div className="flex-1">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-1">
                   <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white truncate">
-                    {user ? user.displayName : 'Player'}
+                    {user?.displayName || displayName || 'Player'}
                   </h2>
                   {playerRank && playerRank <= 10 && (
                     <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 mt-1 sm:mt-0" />
@@ -372,24 +371,45 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-4">
-              <div className="text-center bg-slate-700/30 rounded-lg p-2 sm:p-3">
-                <div className="text-lg sm:text-xl md:text-2xl font-bold text-cyan-400">{stats.highScore.toLocaleString()}</div>
-                <div className="text-xs sm:text-sm text-gray-400">High Score</div>
+            {isLoading ? (
+              <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-4">
+                <div className="text-center bg-slate-700/30 rounded-lg p-2 sm:p-3 animate-pulse">
+                  <div className="h-8 bg-slate-600 rounded mb-1"></div>
+                  <div className="text-xs sm:text-sm text-gray-400">High Score</div>
+                </div>
+                <div className="text-center bg-slate-700/30 rounded-lg p-2 sm:p-3 animate-pulse">
+                  <div className="h-8 bg-slate-600 rounded mb-1"></div>
+                  <div className="text-xs sm:text-sm text-gray-400">Enemies Defeated</div>
+                </div>
+                <div className="text-center bg-slate-700/30 rounded-lg p-2 sm:p-3 animate-pulse">
+                  <div className="h-8 bg-slate-600 rounded mb-1"></div>
+                  <div className="text-xs sm:text-sm text-gray-400">Games Played</div>
+                </div>
+                <div className="text-center bg-slate-700/30 rounded-lg p-2 sm:p-3 animate-pulse">
+                  <div className="h-8 bg-slate-600 rounded mb-1"></div>
+                  <div className="text-xs sm:text-sm text-gray-400">Time Played</div>
+                </div>
               </div>
-              <div className="text-center bg-slate-700/30 rounded-lg p-2 sm:p-3">
-                <div className="text-lg sm:text-xl md:text-2xl font-bold text-cyan-400">{stats.enemiesDestroyed.toLocaleString()}</div>
-                <div className="text-xs sm:text-sm text-gray-400">Enemies Defeated</div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-4">
+                <div className="text-center bg-slate-700/30 rounded-lg p-2 sm:p-3">
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-cyan-400">{stats.highScore.toLocaleString()}</div>
+                  <div className="text-xs sm:text-sm text-gray-400">High Score</div>
+                </div>
+                <div className="text-center bg-slate-700/30 rounded-lg p-2 sm:p-3">
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-cyan-400">{stats.enemiesDestroyed.toLocaleString()}</div>
+                  <div className="text-xs sm:text-sm text-gray-400">Enemies Defeated</div>
+                </div>
+                <div className="text-center bg-slate-700/30 rounded-lg p-2 sm:p-3">
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-cyan-400">{stats.gamesPlayed}</div>
+                  <div className="text-xs sm:text-sm text-gray-400">Games Played</div>
+                </div>
+                <div className="text-center bg-slate-700/30 rounded-lg p-2 sm:p-3">
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-cyan-400">{formatTime(stats.timePlayedMinutes)}</div>
+                  <div className="text-xs sm:text-sm text-gray-400">Time Played</div>
+                </div>
               </div>
-              <div className="text-center bg-slate-700/30 rounded-lg p-2 sm:p-3">
-                <div className="text-lg sm:text-xl md:text-2xl font-bold text-cyan-400">{stats.gamesPlayed}</div>
-                <div className="text-xs sm:text-sm text-gray-400">Games Played</div>
-              </div>
-              <div className="text-center bg-slate-700/30 rounded-lg p-2 sm:p-3">
-                <div className="text-lg sm:text-xl md:text-2xl font-bold text-cyan-400">{formatTime(stats.timePlayedMinutes)}</div>
-                <div className="text-xs sm:text-sm text-gray-400">Time Played</div>
-              </div>
-            </div>
+            )}
 
             {/* STARMINT Token Balance */}
             <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg p-3 sm:p-4 border border-cyan-500/30">
@@ -859,7 +879,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
           )}
 
           {/* Enhanced Social Features */}
-          {user && (
+          {(user || farcasterFid) && (
             <div className="bg-slate-800/60 backdrop-blur-sm rounded-xl p-6 border border-cyan-500/30">
               <div className="flex items-center space-x-3 mb-4">
                 <Heart className="w-6 h-6 text-pink-400" />
@@ -868,15 +888,33 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
               <div className="space-y-4">
                 <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg border border-blue-500/30">
-                  <img
-                    src={user.pfpUrl}
-                    alt={user.displayName || 'Profile'}
-                    className="w-12 h-12 rounded-full border-2 border-cyan-400"
-                  />
+                  <div className="relative w-12 h-12">
+                    {(user?.pfpUrl || profilePicture) ? (
+                      <img
+                        src={user?.pfpUrl || profilePicture || ''}
+                        alt={(user?.displayName || displayName) || 'Profile'}
+                        className="w-12 h-12 rounded-full border-2 border-cyan-400 object-cover"
+                        onError={(e) => {
+                          console.log('Farcaster profile picture failed to load');
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const fallbackDiv = target.nextElementSibling as HTMLDivElement;
+                          if (fallbackDiv) {
+                            fallbackDiv.classList.remove('hidden');
+                          }
+                        }}
+                      />
+                    ) : null}
+                    <div className={`absolute inset-0 w-12 h-12 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center border-2 border-cyan-400 ${(user?.pfpUrl || profilePicture) ? 'hidden' : ''}`}>
+                      <span className="text-white font-bold text-sm">
+                        {(user?.displayName || displayName) ? (user?.displayName || displayName || '').charAt(0).toUpperCase() : 'U'}
+                      </span>
+                    </div>
+                  </div>
                   <div>
-                    <h4 className="font-bold text-white">{user.displayName}</h4>
-                    <p className="text-cyan-400">@{user.username || `fid:${user.fid}`}</p>
-                    <p className="text-xs text-gray-400">FID: {user.fid}</p>
+                    <h4 className="font-bold text-white">{user?.displayName || displayName || 'Player'}</h4>
+                    <p className="text-cyan-400">@{user?.username || `fid:${user?.fid || farcasterFid}`}</p>
+                    <p className="text-xs text-gray-400">FID: {user?.fid || farcasterFid}</p>
                   </div>
                 </div>
 
