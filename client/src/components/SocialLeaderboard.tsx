@@ -1,10 +1,38 @@
 import { useState, useEffect } from 'react';
-import { Trophy, Users, Crown, Medal, Award } from 'lucide-react';
+import { Trophy, Users, Crown, Medal, Award, User } from 'lucide-react';
 import { SocialManager, type GameScore, type SocialUser } from '../lib/social/neynar';
 import { useMiniKit } from '../lib/miniapp/minikit';
 
 interface SocialLeaderboardProps {
   onClose?: () => void;
+}
+
+function ProfilePicture({ src, alt, className }: { src?: string; alt: string; className: string }) {
+  const [imageError, setImageError] = useState(false);
+
+  if (!src || imageError) {
+    const initials = alt
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+
+    return (
+      <div className={`${className} bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs`}>
+        {initials || <User className="w-4 h-4" />}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={() => setImageError(true)}
+    />
+  );
 }
 
 export default function SocialLeaderboard({ onClose }: SocialLeaderboardProps) {
@@ -112,8 +140,8 @@ export default function SocialLeaderboard({ onClose }: SocialLeaderboardProps) {
         {user && (
           <div className="bg-gradient-to-r from-cyan-900/30 to-purple-900/30 border border-cyan-500/30 rounded-lg p-4 mb-4">
             <div className="flex items-center space-x-3">
-              <img 
-                src={user.pfpUrl || '/default-avatar.png'} 
+              <ProfilePicture
+                src={user.pfpUrl}
                 alt={user.displayName || 'You'}
                 className="w-12 h-12 rounded-full"
               />
@@ -176,8 +204,8 @@ export default function SocialLeaderboard({ onClose }: SocialLeaderboardProps) {
                 <div className="flex items-center justify-center w-6">
                   {getRankIcon(player.rank || 0)}
                 </div>
-                <img 
-                  src={player.pfpUrl} 
+                <ProfilePicture
+                  src={player.pfpUrl}
                   alt={player.displayName}
                   className="w-8 h-8 rounded-full"
                 />

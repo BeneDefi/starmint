@@ -1,4 +1,4 @@
-import { ArrowLeft, Trophy, Star, Target, Filter, Users, Clock, Zap, Search, Loader2, Medal, TrendingUp, Calendar } from "lucide-react";
+import { ArrowLeft, Trophy, Star, Target, Filter, Users, Clock, Zap, Search, Loader2, Medal, TrendingUp, Calendar, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { usePlayerStats } from "../../lib/stores/usePlayerStats";
 
@@ -28,6 +28,34 @@ interface LeaderboardMetadata {
 
 type TimeframeFilter = 'daily' | 'weekly' | 'monthly' | 'all';
 type CategoryFilter = 'score' | 'level' | 'enemies';
+
+function ProfilePicture({ src, alt, className }: { src?: string; alt: string; className: string }) {
+  const [imageError, setImageError] = useState(false);
+
+  if (!src || imageError) {
+    const initials = alt
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+
+    return (
+      <div className={`${className} bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs`}>
+        {initials || <User className="w-4 h-4" />}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={() => setImageError(true)}
+    />
+  );
+}
 
 export default function LeaderboardPage({ onBack }: LeaderboardPageProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
@@ -292,13 +320,11 @@ export default function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                           {getRankIcon(rank)}
                         </div>
                         <div className="flex items-center space-x-3">
-                          {player.profilePicture && (
-                            <img
-                              src={player.profilePicture}
-                              alt={player.username}
-                              className="w-8 h-8 rounded-full"
-                            />
-                          )}
+                          <ProfilePicture
+                            src={player.profilePicture}
+                            alt={player.displayName || player.username}
+                            className="w-8 h-8 rounded-full"
+                          />
                           <div>
                             <h3 className="text-lg font-bold text-white flex items-center space-x-2">
                               <span>{player.displayName || player.username}</span>
