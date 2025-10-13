@@ -15,5 +15,8 @@
     "splashImageUrl": "https://i.imgur.com/7ioOqIO.jpeg",
     "splashBackgroundColor": "#800080",
     "webhookUrl": "https://starmint.onrender.com/webhook"
+  },
+  "baseBuilder": {
+    "allowedAddresses": ["0xdD45193eCF38809cEA8e95E6B763e12C53fA87C8"]
   }
 }
