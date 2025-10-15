@@ -3,6 +3,7 @@ import Game from "./components/Game";
 import MainMenu from "./components/MainMenu";
 import MiniAppGame from "./components/MiniAppGame";
 import MiniAppHeader from "./components/MiniAppHeader";
+import WelcomeDialog from "./components/WelcomeDialog";
 import { MiniKitProvider, useMiniKit } from "./lib/miniapp/minikit";
 import { useAudio } from "./lib/stores/useAudio";
 import { useGameState } from "./lib/stores/useGameState";
@@ -15,9 +16,10 @@ import "./styles/accessibility.css";
 function AppContent() {
   const [showMenu, setShowMenu] = useState(true);
   const [isMiniApp, setIsMiniApp] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
   const { gamePhase } = useGameState();
   const { setBackgroundMusic, setHitSound, setSuccessSound, setShootSound, setGameOverSound } = useAudio();
-  const { isReady, context, notifyReady } = useMiniKit();
+  const { isReady, context, notifyReady, user } = useMiniKit();
 
   useEffect(() => {
     // Check if running in Mini App context
@@ -46,6 +48,19 @@ function AppContent() {
     setShootSound(shootSound);
     setGameOverSound(gameOverSound);
   }, [setBackgroundMusic, setHitSound, setSuccessSound, setShootSound, setGameOverSound]);
+
+  // Check if first-time user and show welcome dialog
+  useEffect(() => {
+    if (isReady && isMiniApp && user) {
+      const hasSeenWelcome = localStorage.getItem('starmint_welcome_shown');
+      if (!hasSeenWelcome) {
+        const timer = setTimeout(() => {
+          setShowWelcome(true);
+        }, 1000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isReady, isMiniApp, user]);
 
   // Call sdk.actions.ready() when app content is fully loaded and visible
   // Note: User identity is initialized by MiniKitProvider before gameplay starts
@@ -100,6 +115,9 @@ function AppContent() {
       ) : (
         <Game onBackToMenu={handleBackToMenu} />
       )}
+
+      {/* Welcome Dialog for first-time users */}
+      <WelcomeDialog open={showWelcome} onOpenChange={setShowWelcome} />
     </div>
   );
 }

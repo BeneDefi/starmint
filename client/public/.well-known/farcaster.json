@@ -13,7 +13,7 @@
     "imageUrl": "https://i.imgur.com/g0efTKV.jpeg",
     "buttonTitle": "Play Game",
     "splashImageUrl": "https://i.imgur.com/7ioOqIO.jpeg",
-    "splashBackgroundColor": "#800080",
+    "splashBackgroundColor": "#280137",
     "webhookUrl": "https://starmint.onrender.com/webhook"
   },
   "baseBuilder": {
