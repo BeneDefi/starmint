@@ -20,6 +20,12 @@ export default defineConfig({
       "@shared": path.resolve(__dirname, "shared"),
     },
   },
+  optimizeDeps: {
+    include: ['@phosphor-icons/react', 'viem'],
+    esbuildOptions: {
+      target: 'esnext',
+    },
+  },
   root: path.resolve(__dirname, "client"),
   build: {
     outDir: path.resolve(__dirname, "dist"),
