@@ -330,7 +330,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   const playerTitle = getPlayerTitle();
 
   // Share functionality
-  const shareUrl = typeof window !== 'undefined' ? window.location.origin : 'https://starmint.onrender.com';
+  const shareUrl = 'https://farcaster.xyz/miniapps/DEE7X1AmwTMp/space-shooter-game';
   const shareText = `🚀 Just scored ${stats.highScore.toLocaleString()} points in STARMINT! 🎮\n\nCheck out my stats:\n⭐ Level ${experienceLevel}\n🎯 ${stats.enemiesDestroyed} enemies destroyed\n🔥 ${currentStreak} day streak\n\nCan you beat my score? Play now!`;
 
   const handleShare = (platform: string) => {

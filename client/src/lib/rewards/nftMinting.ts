@@ -1,5 +1,5 @@
 import { WalletManager } from '../web3/wallet';
-import type { Address } from 'viem';
+import type { Address } from 'viem/accounts';
 
 export interface NFTReward {
   id: string;

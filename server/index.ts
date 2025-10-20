@@ -53,6 +53,7 @@ app.use(
       },
     },
     crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false, // Required for Coinbase Wallet SDK
     frameguard: false, // Disable X-Frame-Options since we're using CSP frame-ancestors
   })
 );
