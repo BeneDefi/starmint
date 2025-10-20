@@ -29,6 +29,7 @@ import { useMiniKit } from "../../lib/miniapp/minikit";
 import { usePlayerStats } from "../../lib/stores/usePlayerStats";
 import { useEffect, useState } from "react";
 import { SocialLeaderboard } from "../../lib/social/leaderboard";
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import {
   Dialog,
   DialogContent,
@@ -64,7 +65,15 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   const [gameSessions, setGameSessions] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedAddress, setCopiedAddress] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showWalletDialog, setShowWalletDialog] = useState(false);
+  const [walletError, setWalletError] = useState<string | null>(null);
+  
+  // Wallet hooks
+  const { address, isConnecting, isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
+  const { disconnect } = useDisconnect();
 
   useEffect(() => {
     console.log("🔍 ProfilePage useEffect triggered with user:", user);
@@ -185,6 +194,39 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       );
     };
   }, [user, loadPlayerStats, farcasterFid]);
+
+  // Automatic wallet connection when user context is available
+  useEffect(() => {
+    const initializeWallet = async () => {
+      // Get active user from context or global
+      let activeUser = user;
+      if (!activeUser) {
+        const globalContext = (window as any).__miniKitContext__;
+        if (globalContext?.user) {
+          activeUser = globalContext.user;
+        }
+      }
+
+      // Auto-connect wallet if not connected and user has verified wallet
+      const verifiedWallet = activeUser?.verified_accounts?.[0]?.wallet_address;
+      if (verifiedWallet && !isConnected && connectors.length > 0 && !isConnecting) {
+        const farcasterConnector = connectors.find(c => c.id === 'farcaster');
+        if (farcasterConnector) {
+          try {
+            console.log('🔗 Auto-connecting Farcaster wallet...');
+            await connect({ connector: farcasterConnector });
+            console.log('✅ Wallet connected automatically');
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to connect wallet';
+            console.error('Wallet connection error:', errorMessage);
+            setWalletError(errorMessage);
+          }
+        }
+      }
+    };
+
+    initializeWallet();
+  }, [user, isConnected, isConnecting, connectors, connect]);
 
   const loadSocialData = async (fid: number) => {
     try {
@@ -411,15 +453,100 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
             </div>
           </div>
 
-          {/* Share Button */}
-          <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-            <DialogTrigger asChild>
-              <button className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 backdrop-blur-sm rounded-xl p-2 sm:p-3 border border-cyan-500/30 hover:border-cyan-400/60 transition-all duration-300 min-h-[44px] flex items-center gap-2">
-                <Share2 className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400" />
-                <span className="text-cyan-400 font-medium hidden sm:inline">Share</span>
-              </button>
-            </DialogTrigger>
-            <DialogContent className="bg-slate-900 border-cyan-500/30">
+          <div className="flex items-center gap-2">
+            {/* Wallet Button */}
+            <Dialog open={showWalletDialog} onOpenChange={setShowWalletDialog}>
+              <DialogTrigger asChild>
+                <button className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 backdrop-blur-sm rounded-xl p-2 sm:p-3 border border-cyan-500/30 hover:border-cyan-400/60 transition-all duration-300 min-h-[44px] flex items-center gap-2">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                  <span className="text-cyan-400 font-medium hidden sm:inline">Wallet</span>
+                </button>
+              </DialogTrigger>
+              <DialogContent className="bg-slate-900 border-cyan-500/30">
+                <DialogHeader>
+                  <DialogTitle className="text-white flex items-center gap-2">
+                    <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    Wallet
+                  </DialogTitle>
+                </DialogHeader>
+                
+                {isConnected && address && !walletError ? (
+                  <div className="space-y-3 pt-4">
+                    <div className="flex items-center justify-between bg-slate-700/30 rounded-lg p-3">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <span className="text-sm text-gray-300">Verified Farcaster Wallet</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between gap-2 text-sm bg-slate-700/30 rounded-lg p-3">
+                      <span className="font-mono text-cyan-400">
+                        {`${address.slice(0, 6)}...${address.slice(-4)}`}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(address);
+                            setCopiedAddress(true);
+                            setTimeout(() => setCopiedAddress(false), 2000);
+                          } catch (error) {
+                            console.error('Failed to copy:', error);
+                          }
+                        }}
+                        className="text-cyan-400 hover:text-cyan-300 transition-colors"
+                      >
+                        {copiedAddress ? (
+                          <Check className="w-4 h-4" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        disconnect();
+                        setShowWalletDialog(false);
+                      }}
+                      className="w-full text-sm text-red-400 hover:text-red-300 py-2 transition-colors"
+                    >
+                      Disconnect Wallet
+                    </button>
+                  </div>
+                ) : walletError ? (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mt-4">
+                    <p className="text-sm text-red-400">{walletError}</p>
+                  </div>
+                ) : isConnecting ? (
+                  <div className="text-center py-6">
+                    <div className="animate-spin w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+                    <p className="text-sm text-gray-400">Connecting wallet...</p>
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-sm text-gray-400">
+                    No wallet connected
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
+
+            {/* Share Button */}
+            <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+              <DialogTrigger asChild>
+                <button className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 backdrop-blur-sm rounded-xl p-2 sm:p-3 border border-cyan-500/30 hover:border-cyan-400/60 transition-all duration-300 min-h-[44px] flex items-center gap-2">
+                  <Share2 className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400" />
+                  <span className="text-cyan-400 font-medium hidden sm:inline">Share</span>
+                </button>
+              </DialogTrigger>
+              <DialogContent className="bg-slate-900 border-cyan-500/30">
               <DialogHeader>
                 <DialogTitle className="text-white flex items-center gap-2">
                   <Share2 className="w-5 h-5 text-cyan-400" />
@@ -492,7 +619,8 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 </button>
               </div>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto space-y-3 sm:space-y-4 md:space-y-6">

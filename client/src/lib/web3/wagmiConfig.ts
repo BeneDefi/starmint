@@ -1,13 +1,10 @@
 import { http, createConfig } from 'wagmi';
 import { base } from 'viem/chains';
-import { injected, coinbaseWallet } from 'wagmi/connectors';
+import { customFarcasterConnector } from '../../utils/farcasterConnector';
 
 export const wagmiConfig = createConfig({
   chains: [base],
-  connectors: [
-    injected(),
-    coinbaseWallet({ appName: 'STARMINT' }),
-  ],
+  connectors: [customFarcasterConnector()],
   transports: {
     [base.id]: http('https://mainnet.base.org'),
   },
