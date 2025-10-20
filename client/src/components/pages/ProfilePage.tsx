@@ -195,38 +195,8 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
     };
   }, [user, loadPlayerStats, farcasterFid]);
 
-  // Automatic wallet connection when user context is available
-  useEffect(() => {
-    const initializeWallet = async () => {
-      // Get active user from context or global
-      let activeUser = user;
-      if (!activeUser) {
-        const globalContext = (window as any).__miniKitContext__;
-        if (globalContext?.user) {
-          activeUser = globalContext.user;
-        }
-      }
-
-      // Auto-connect wallet if not connected and user has verified wallet
-      const verifiedWallet = activeUser?.verified_accounts?.[0]?.wallet_address;
-      if (verifiedWallet && !isConnected && connectors.length > 0 && !isConnecting) {
-        const farcasterConnector = connectors.find(c => c.id === 'farcaster');
-        if (farcasterConnector) {
-          try {
-            console.log('🔗 Auto-connecting Farcaster wallet...');
-            await connect({ connector: farcasterConnector });
-            console.log('✅ Wallet connected automatically');
-          } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Failed to connect wallet';
-            console.error('Wallet connection error:', errorMessage);
-            setWalletError(errorMessage);
-          }
-        }
-      }
-    };
-
-    initializeWallet();
-  }, [user, isConnected, isConnecting, connectors, connect]);
+  // Note: Auto-wallet connection disabled - user must manually connect via UI
+  // The MiniKit SDK UserProfile type doesn't include verified_accounts property
 
   const loadSocialData = async (fid: number) => {
     try {
