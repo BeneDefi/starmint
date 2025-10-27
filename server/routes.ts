@@ -525,6 +525,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get Farcaster user data from Warpcast API (for PFP fetching)
+  app.get('/api/farcaster/user', async (req: Request, res: Response) => {
+    const { getUserByFid } = await import('./api/farcaster/user');
+    return getUserByFid(req, res);
+  });
+
   // Get game sessions by Farcaster FID for profile page
   app.get('/api/player-sessions/:farcasterFid', [
     param('farcasterFid').isInt().withMessage('Invalid Farcaster FID'),

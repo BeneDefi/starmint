@@ -3,8 +3,9 @@ import { useAudio } from "../lib/stores/useAudio";
 import { useVibration } from "../lib/stores/useVibration";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
-import { Volume2, VolumeX, Play, RotateCcw, Pause, Star, Vibrate, ArrowLeft } from "lucide-react";
+import { Volume2, VolumeX, Play, RotateCcw, Pause, Star, Vibrate, ArrowLeft, Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { ShareOrMintModal } from "./ShareOrMintModal";
 
 interface GameUIProps {
   onStart: () => void;
@@ -16,6 +17,7 @@ export default function GameUI({ onStart, onBackToMenu }: GameUIProps) {
   const { toggleMute, isMuted } = useAudio();
   const { toggleVibration, isVibrationEnabled, isVibrationSupported } = useVibration();
   const [levelUpNotification, setLevelUpNotification] = useState<{ show: boolean; level: number } | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   // Listen for level up events
   useEffect(() => {
@@ -171,6 +173,14 @@ export default function GameUI({ onStart, onBackToMenu }: GameUIProps) {
             
             <div className="space-y-3 sm:space-y-4">
               <Button 
+                onClick={() => setShowShareModal(true)}
+                className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-sm sm:text-base min-h-[44px]"
+              >
+                <Share2 className="mr-2 h-4 w-4" />
+                Share or Mint Score
+              </Button>
+              
+              <Button 
                 onClick={restartGame}
                 className="w-full bg-red-600 hover:bg-red-700 text-white text-sm sm:text-base min-h-[44px]"
               >
@@ -211,6 +221,13 @@ export default function GameUI({ onStart, onBackToMenu }: GameUIProps) {
             </div>
           </CardContent>
         </Card>
+        
+        <ShareOrMintModal 
+          isOpen={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          score={score}
+          level={level}
+        />
       </div>
     );
   }

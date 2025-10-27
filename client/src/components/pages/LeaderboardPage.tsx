@@ -29,7 +29,7 @@ interface LeaderboardMetadata {
 type TimeframeFilter = 'daily' | 'weekly' | 'monthly' | 'all';
 type CategoryFilter = 'score' | 'level' | 'enemies';
 
-function ProfilePicture({ src, alt, className }: { src?: string; alt: string; className: string }) {
+function ProfilePicture({ src, alt, className, showBorder = true }: { src?: string; alt: string; className: string; showBorder?: boolean }) {
   const [imageError, setImageError] = useState(false);
 
   if (!src || imageError) {
@@ -41,8 +41,8 @@ function ProfilePicture({ src, alt, className }: { src?: string; alt: string; cl
       .slice(0, 2);
 
     return (
-      <div className={`${className} bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs`}>
-        {initials || <User className="w-4 h-4" />}
+      <div className={`${className} bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold ${showBorder ? 'border-2 border-cyan-400' : ''}`}>
+        <span className="text-xs sm:text-sm">{initials || <User className="w-3 h-3 sm:w-4 sm:h-4" />}</span>
       </div>
     );
   }
@@ -51,8 +51,14 @@ function ProfilePicture({ src, alt, className }: { src?: string; alt: string; cl
     <img
       src={src}
       alt={alt}
-      className={className}
-      onError={() => setImageError(true)}
+      className={`${className} ${showBorder ? 'border-2 border-cyan-400' : ''} object-cover`}
+      onError={(e) => {
+        console.log("🖼️ Leaderboard profile picture failed to load:", src, "for user:", alt);
+        setImageError(true);
+      }}
+      onLoad={() => {
+        console.log("✅ Leaderboard profile picture loaded successfully:", src, "for user:", alt);
+      }}
     />
   );
 }
@@ -66,7 +72,7 @@ export default function LeaderboardPage({ onBack }: LeaderboardPageProps) {
   const [category, setCategory] = useState<CategoryFilter>('score');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const { stats, farcasterFid } = usePlayerStats();
+  const { stats, farcasterFid, displayName, profilePicture } = usePlayerStats();
 
   const fetchLeaderboard = async () => {
     try {
@@ -323,7 +329,7 @@ export default function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                           <ProfilePicture
                             src={player.profilePicture}
                             alt={player.displayName || player.username}
-                            className="w-8 h-8 rounded-full"
+                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full"
                           />
                           <div>
                             <h3 className="text-lg font-bold text-white flex items-center space-x-2">
@@ -358,12 +364,17 @@ export default function LeaderboardPage({ onBack }: LeaderboardPageProps) {
 
         {/* Your Rank */}
         {!loading && currentUserEntry && (
-          <div className="mt-4 sm:mt-6 bg-slate-800/80 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-cyan-500/50">
+          <div className="mt-4 sm:mt-6 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 backdrop-blur-sm rounded-xl p-3 sm:p-4 border-2 border-cyan-500/70">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-cyan-500 text-black font-bold flex-shrink-0">
+                <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-cyan-500 text-black font-bold flex-shrink-0 text-sm sm:text-base">
                   {currentUserRank || '?'}
                 </div>
+                <ProfilePicture
+                  src={currentUserEntry.profilePicture || profilePicture || undefined}
+                  alt={currentUserEntry.displayName || displayName || "Your profile"}
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0"
+                />
                 <div className="min-w-0 flex-1">
                   <h3 className="text-base sm:text-lg font-bold text-white">Your Rank</h3>
                   <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-300">

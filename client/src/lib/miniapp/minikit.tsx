@@ -351,8 +351,8 @@ export function MiniKitProvider({ children }: MiniKitProviderProps) {
   const shareScore = async (score: number) => {
     try {
       await sdk.actions.composeCast({
-        text: `🚀 Just scored ${score.toLocaleString()} points in Galaxiga Classic Space Shooter! Think you can beat my high score? 👾`,
-        embeds: [window.location.origin]
+        text: `🚀 Just scored ${score.toLocaleString()} points in STARMINT! Think you can beat my high score? 👾`,
+        embeds: ['https://farcaster.xyz/miniapps/DEE7X1AmwTMp/space-shooter-game']
       });
     } catch (error) {
       console.error('Failed to share score:', error);
