@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { X, Share2, Coins } from 'lucide-react';
+import { X, Share2, Coins, AlertTriangle, ExternalLink } from 'lucide-react';
 import { useMiniKit } from '../lib/miniapp/minikit';
 import { useMintScore } from '../hooks/useMintScore';
 import { useAccount, useConnect } from 'wagmi';
@@ -13,10 +12,9 @@ interface ShareOrMintModalProps {
 
 export function ShareOrMintModal({ isOpen, onClose, score, level }: ShareOrMintModalProps) {
   const { shareScore } = useMiniKit();
-  const { mintScore, isPending, isConfirming, isSuccess, txHash } = useMintScore();
+  const { mintScore, isPending, isConfirming, isSuccess, txHash, mintError } = useMintScore();
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
-  const [mintError, setMintError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -40,10 +38,8 @@ export function ShareOrMintModal({ isOpen, onClose, score, level }: ShareOrMintM
     }
 
     try {
-      setMintError(null);
       await mintScore(score, level);
     } catch (error: any) {
-      setMintError(error.message || 'Failed to mint NFT');
       console.error('Mint failed:', error);
     }
   };
@@ -66,15 +62,18 @@ export function ShareOrMintModal({ isOpen, onClose, score, level }: ShareOrMintM
 
         {isSuccess ? (
           <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-4 mb-4">
-            <p className="text-green-300 text-center mb-2">✅ NFT Minted Successfully!</p>
+            <p className="text-green-300 text-center font-bold mb-2">✅ NFT Minted Successfully!</p>
+            <p className="text-green-200/80 text-sm text-center mb-3">
+              Your score has been immortalized on the Base blockchain!
+            </p>
             {txHash && (
               <a
                 href={`https://basescan.org/tx/${txHash}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-cyan-400 hover:text-cyan-300 block text-center underline"
+                className="flex items-center justify-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 underline"
               >
-                View on BaseScan
+                View on BaseScan <ExternalLink size={14} />
               </a>
             )}
           </div>
@@ -115,18 +114,80 @@ export function ShareOrMintModal({ isOpen, onClose, score, level }: ShareOrMintM
             </div>
 
             {mintError && (
-              <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 mb-4">
-                <p className="text-red-300 text-sm text-center">{mintError}</p>
+              <div className={`rounded-lg p-4 mb-4 border ${
+                mintError.type === 'user_rejected'
+                  ? 'bg-yellow-500/20 border-yellow-500/50'
+                  : mintError.type === 'insufficient_funds' || mintError.type === 'wrong_network'
+                  ? 'bg-orange-500/20 border-orange-500/50'
+                  : 'bg-red-500/20 border-red-500/50'
+              }`}>
+                <div className="flex items-start gap-3">
+                  <AlertTriangle 
+                    size={20} 
+                    className={
+                      mintError.type === 'user_rejected'
+                        ? 'text-yellow-300 mt-0.5'
+                        : mintError.type === 'insufficient_funds' || mintError.type === 'wrong_network'
+                        ? 'text-orange-300 mt-0.5'
+                        : 'text-red-300 mt-0.5'
+                    } 
+                  />
+                  <div className="flex-1">
+                    <p className={`text-sm font-medium mb-1 ${
+                      mintError.type === 'user_rejected'
+                        ? 'text-yellow-300'
+                        : mintError.type === 'insufficient_funds' || mintError.type === 'wrong_network'
+                        ? 'text-orange-300'
+                        : 'text-red-300'
+                    }`}>
+                      {mintError.type === 'user_rejected' && 'Transaction Cancelled'}
+                      {mintError.type === 'insufficient_funds' && 'Insufficient Funds'}
+                      {mintError.type === 'wrong_network' && 'Wrong Network'}
+                      {mintError.type === 'network_error' && 'Network Error'}
+                      {mintError.type === 'contract_error' && 'Contract Error'}
+                      {mintError.type === 'unknown' && 'Error'}
+                    </p>
+                    <p className={`text-xs ${
+                      mintError.type === 'user_rejected'
+                        ? 'text-yellow-200/80'
+                        : mintError.type === 'insufficient_funds' || mintError.type === 'wrong_network'
+                        ? 'text-orange-200/80'
+                        : 'text-red-200/80'
+                    }`}>
+                      {mintError.userMessage}
+                    </p>
+                    
+                    {mintError.type === 'insufficient_funds' && (
+                      <a
+                        href="https://www.coinbase.com/how-to-buy/ethereum"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-orange-300 hover:text-orange-200 underline mt-2"
+                      >
+                        Get ETH on Base <ExternalLink size={12} />
+                      </a>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
-            <p className="text-xs text-purple-300/60 text-center">
-              {isConnected ? (
-                <>Minting costs ~$0.01-0.05 in gas fees on Base</>
-              ) : (
-                <>Connect your wallet to mint your score as an NFT on Base mainnet</>
-              )}
-            </p>
+            <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 mb-2">
+              <p className="text-xs text-purple-200/80 text-center leading-relaxed">
+                {isConnected ? (
+                  <>
+                    <span className="font-medium text-purple-300">Gas Fees:</span> Minting costs approximately $0.01-0.05 in ETH on Base network.
+                    {address && (
+                      <span className="block mt-1 text-purple-300/60">
+                        Connected: {address.slice(0, 6)}...{address.slice(-4)}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <>Connect your wallet to mint your score as an NFT on Base mainnet. Your achievement will be permanently stored on the blockchain!</>
+                )}
+              </p>
+            </div>
           </>
         )}
 
