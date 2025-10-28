@@ -42,6 +42,41 @@ interface ProfilePageProps {
   onBack: () => void;
 }
 
+// ProfilePicture component with proper error handling
+function ProfilePicture({ src, alt, className }: { src?: string; alt: string; className: string }) {
+  const [imageError, setImageError] = useState(false);
+
+  if (!src || imageError) {
+    const initials = alt
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+
+    return (
+      <div className={`${className} bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold border-2 border-cyan-400`}>
+        <span className="text-xs">{initials || <User className="w-4 h-4" />}</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={`${className} object-cover border-2 border-cyan-400`}
+      onError={() => {
+        console.log("🖼️ ProfilePage: Profile picture failed to load:", src, "for user:", alt);
+        setImageError(true);
+      }}
+      onLoad={() => {
+        console.log("✅ ProfilePage: Profile picture loaded successfully:", src, "for user:", alt);
+      }}
+    />
+  );
+}
+
 // Real inventory will be loaded from purchase history
 
 export default function ProfilePage({ onBack }: ProfilePageProps) {
@@ -829,7 +864,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                     <div className="text-2xl font-bold text-cyan-400">
                       #{index + 1}
                     </div>
-                    <img
+                    <ProfilePicture
                       src={friend.pfpUrl}
                       alt={friend.displayName}
                       className="w-10 h-10 rounded-full"
